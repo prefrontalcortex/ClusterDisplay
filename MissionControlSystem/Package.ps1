@@ -1,6 +1,6 @@
 ﻿$missionControlPath = $PSScriptRoot
 $buildType = "Release"
-$dotNetVersion = "net6.0"
+$dotNetVersion = "net8.0"
 
 $packagedFolder = Join-Path $PSScriptRoot "packaged"
 if (-not (Test-Path $packagedFolder))
@@ -16,7 +16,7 @@ if (-not (Test-Path $hangarBayDstPath))
 }
 $hangarBaySrcPath = [IO.Path]::Combine($missionControlPath, "HangarBay", "bin", $buildType, $dotNetVersion)
 $copyPath = Join-Path $hangarBaySrcPath "*"
-Copy-Item -Path $copyPath -Destination $hangarBayDstPath -Exclude "appsettings.Development.json", "HangarBay.deps.json"
+Copy-Item -Path $copyPath -Destination $hangarBayDstPath -Exclude "appsettings.Development.json", "HangarBay.deps.json" -ErrorAction Stop
 
 $toZipPath = Join-Path $hangarBayDstPath ".."
 $zipPath = "HangarBay.zip"
@@ -30,7 +30,7 @@ if (-not (Test-Path $launchPadDstPath))
 }
 $launchPadSrcPath = [IO.Path]::Combine($missionControlPath, "LaunchPad", "bin", $buildType, $dotNetVersion)
 $copyPath = Join-Path $launchPadSrcPath "*"
-Copy-Item -Path $copyPath -Destination $launchPadDstPath -Exclude "appsettings.Development.json", "LaunchPad.deps.json"
+Copy-Item -Path $copyPath -Destination $launchPadDstPath -Exclude "appsettings.Development.json", "LaunchPad.deps.json" -ErrorAction Stop
 
 $toZipPath = Join-Path $launchPadDstPath ".."
 $zipPath = "LaunchPad.zip"
@@ -44,7 +44,7 @@ if (-not (Test-Path $missionControlDstPath))
 }
 $missionControlSrcPath = [IO.Path]::Combine($missionControlPath, "MissionControl", "bin", $buildType, $dotNetVersion)
 $copyPath = Join-Path $missionControlSrcPath "*"
-Copy-Item -Path $copyPath -Destination $missionControlDstPath -Exclude "appsettings.Development.json", "MissionControl.deps.json"
+Copy-Item -Path $copyPath -Destination $missionControlDstPath -Exclude "appsettings.Development.json", "MissionControl.deps.json" -ErrorAction Stop
 
 $dependenciesZipPath = Join-Path $missionControlDstPath ".."
 Compress-Archive -Path (Join-Path $hangarBayDstPath "*") -DestinationPath (Join-Path $dependenciesZipPath "hangarBay.zip") -Force
@@ -54,9 +54,9 @@ $toZipPath = Join-Path $missionControlDstPath ".."
 $zipPath = "MissionControl.zip"
 if (Test-Path $zipPath)
 {
-    Remove-Item $zipPath
+    Remove-Item $zipPath -Force
 }
-Compress-Archive -Path $toZipPath -DestinationPath $zipPath
+Compress-Archive -Path $toZipPath -DestinationPath $zipPath -Force
 
 #Package UI
 $uiDstPath = [IO.Path]::Combine($packagedFolder, "UI")
@@ -66,13 +66,15 @@ if (-not (Test-Path $uiDstPath))
 }
 $uiSrcPath = [IO.Path]::Combine($missionControlPath, "MissionControl.EngineeringUI", "Server", "bin", $buildType, $dotNetVersion, "publish")
 $copyPath = Join-Path $uiSrcPath "*"
-Copy-Item -Path $copyPath -Destination $uiDstPath -Exclude "appsettings.Development.json" -Recurse
-Remove-Item -Path ([IO.Path]::Combine($uiDstPath, "wwwroot", "appsettings.json.br"))
-Remove-Item -Path ([IO.Path]::Combine($uiDstPath, "wwwroot", "appsettings.json.gz"))
+Copy-Item -Path $copyPath -Destination $uiDstPath -Exclude "appsettings.Development.json" -Recurse -ErrorAction Stop
+
+# optional: ignore missing compressed settings files without failing
+Try { Remove-Item -Path ([IO.Path]::Combine($uiDstPath, "wwwroot", "appsettings.json.br")) -ErrorAction SilentlyContinue } Catch {}
+Try { Remove-Item -Path ([IO.Path]::Combine($uiDstPath, "wwwroot", "appsettings.json.gz")) -ErrorAction SilentlyContinue } Catch {}
 
 $toZipPath = $uiDstPath
 $zipPath = "UI.zip"
 Compress-Archive -Path $toZipPath -DestinationPath $zipPath -Force
 
 # Cleanup temp directories
-Remove-Item -Path $packagedFolder -Recurse
+Remove-Item -Path $packagedFolder -Recurse -Force
