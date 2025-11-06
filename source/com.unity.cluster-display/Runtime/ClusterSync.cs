@@ -287,7 +287,7 @@ namespace Unity.ClusterDisplay
             }
             catch (Exception e)
             {
-                ClusterDebug.LogError($"Cannot initialize backup node: {e.Message}");
+				ClusterDebug.LogError($"Cannot initialize backup node: {e.Message}");
                 return false;
             }
         }

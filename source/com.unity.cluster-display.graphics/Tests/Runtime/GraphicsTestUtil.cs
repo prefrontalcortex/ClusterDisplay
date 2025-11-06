@@ -1,9 +1,7 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.IO;
 using NUnit.Framework;
-using Unity.TestProtocol;
-using Unity.TestProtocol.Messages;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -79,9 +77,7 @@ namespace Unity.ClusterDisplay.Graphics.Tests
 
         public static void ReportArtifact(string artifactPath)
         {
-            var fullPath = Path.GetFullPath(artifactPath);
-            var message = ArtifactPublishMessage.Create(fullPath);
-            Debug.Log(UnityTestProtocolMessageBuilder.Serialize(message));
+            Debug.Log($"Artifact saved at: {artifactPath}");
         }
 
         public static void SaveAsPNG(Texture2D texture, string fileName)
