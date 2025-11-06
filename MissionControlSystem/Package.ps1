@@ -41,19 +41,19 @@ function Package-Folder($name, $srcRelative, $isPublish = $false, $exclude = @()
 
 # Package HangarBay
 $hangarBayDstPath = Package-Folder "HangarBay" "HangarBay" $false @("appsettings.Development.json","HangarBay.deps.json")
-Compress-Archive -Path (Join-Path $hangarBayDstPath "..") -DestinationPath "HangarBay.zip" -Force
+Compress-Archive -Path (Join-Path $hangarBayDstPath "..") -DestinationPath (Join-Path $PSScriptRoot "HangarBay.zip") -Force
 
 # Package LaunchPad
 $launchPadDstPath = Package-Folder "LaunchPad" "LaunchPad" $false @("appsettings.Development.json","LaunchPad.deps.json")
-Compress-Archive -Path (Join-Path $launchPadDstPath "..") -DestinationPath "LaunchPad.zip" -Force
+Compress-Archive -Path (Join-Path $launchPadDstPath "..") -DestinationPath (Join-Path $PSScriptRoot "LaunchPad.zip") -Force
 
 # Package MissionControl and dependencies
 $missionControlDstPath = Package-Folder "MissionControl" "MissionControl" $false @("appsettings.Development.json","MissionControl.deps.json")
 $dependenciesZipPath = Join-Path $missionControlDstPath ".."
 Compress-Archive -Path (Join-Path $hangarBayDstPath "*") -DestinationPath (Join-Path $dependenciesZipPath "hangarBay.zip") -Force
 Compress-Archive -Path (Join-Path $launchPadDstPath "*") -DestinationPath (Join-Path $dependenciesZipPath "launchPad.zip") -Force
-if (Test-Path "MissionControl.zip") { Remove-Item "MissionControl.zip" -Force }
-Compress-Archive -Path (Join-Path $missionControlDstPath "..") -DestinationPath "MissionControl.zip" -Force
+if (Test-Path (Join-Path $PSScriptRoot "MissionControl.zip")) { Remove-Item (Join-Path $PSScriptRoot "MissionControl.zip") -Force }
+Compress-Archive -Path (Join-Path $missionControlDstPath "..") -DestinationPath (Join-Path $PSScriptRoot "MissionControl.zip") -Force
 
 # Package UI (publish expected) - falls publish fehlt, automatisch dotnet publish ausführen
 $uiDstPath = [IO.Path]::Combine($packagedFolder, "UI")
@@ -97,7 +97,7 @@ Copy-Item -Path (Join-Path $uiSrcPath "*") -Destination $uiDstPath -Exclude "app
 Try { Remove-Item -Path ([IO.Path]::Combine($uiDstPath, "wwwroot", "appsettings.json.br")) -ErrorAction SilentlyContinue } Catch {}
 Try { Remove-Item -Path ([IO.Path]::Combine($uiDstPath, "wwwroot", "appsettings.json.gz")) -ErrorAction SilentlyContinue } Catch {}
 
-Compress-Archive -Path $uiDstPath -DestinationPath "UI.zip" -Force
+Compress-Archive -Path $uiDstPath -DestinationPath (Join-Path $PSScriptRoot "UI.zip") -Force
 
 # Cleanup temp directories
 Remove-Item -Path $packagedFolder -Recurse -Force
