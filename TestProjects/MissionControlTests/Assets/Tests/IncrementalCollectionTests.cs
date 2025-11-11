@@ -331,21 +331,30 @@ namespace Unity.ClusterDisplay.MissionControl
             testCollection.Add(object2);
             TestObject object3 = new(Guid.NewGuid()) { Property = 1234 };
 
-            Assert.That(testCollection.ContainsKey(object1.Id), Is.True);
-            Assert.That(testCollection.ContainsKey(object2.Id), Is.True);
-            Assert.That(testCollection.ContainsKey(object3.Id), Is.False);
+            Assert.Multiple(() =>
+            {
+                Assert.That(testCollection.ContainsKey(object1.Id), Is.True);
+                Assert.That(testCollection.ContainsKey(object2.Id), Is.True);
+                Assert.That(testCollection.ContainsKey(object3.Id), Is.False);
+            });
 
             testCollection.Remove(object2.Id);
 
-            Assert.That(testCollection.ContainsKey(object1.Id), Is.True);
-            Assert.That(testCollection.ContainsKey(object2.Id), Is.False);
-            Assert.That(testCollection.ContainsKey(object3.Id), Is.False);
+            Assert.Multiple(() =>
+            {
+                Assert.That(testCollection.ContainsKey(object1.Id), Is.True);
+                Assert.That(testCollection.ContainsKey(object2.Id), Is.False);
+                Assert.That(testCollection.ContainsKey(object3.Id), Is.False);
+            });
 
             testCollection.Remove(object1.Id);
 
-            Assert.That(testCollection.ContainsKey(object1.Id), Is.False);
-            Assert.That(testCollection.ContainsKey(object2.Id), Is.False);
-            Assert.That(testCollection.ContainsKey(object3.Id), Is.False);
+            Assert.Multiple(() =>
+            {
+                Assert.That(testCollection.ContainsKey(object1.Id), Is.False);
+                Assert.That(testCollection.ContainsKey(object2.Id), Is.False);
+                Assert.That(testCollection.ContainsKey(object3.Id), Is.False);
+            });
         }
 
         [Test]
@@ -460,8 +469,10 @@ namespace Unity.ClusterDisplay.MissionControl
             collectionDst.ApplyDelta(update);
             Assert.That(collectionDst.Count(), Is.EqualTo(1));
             var objectFromDst = collectionDst[newObject1.Id];
-            List<TestObject> newObjects = new();
-            newObjects.Add(objectFromDst);
+            List<TestObject> newObjects = new()
+            {
+                objectFromDst
+            };
             Assert.That(objectFromDst, Is.EqualTo(newObject1));
             Assert.That(collectionDst.FirstVersionNumberOf(objectFromDst), Is.EqualTo(1));
             Assert.That(collectionDst.VersionNumberOf(objectFromDst), Is.EqualTo(1));
@@ -554,7 +565,7 @@ namespace Unity.ClusterDisplay.MissionControl
             Assert.That(collectionDst.FirstVersionNumberOf(objectFromDst), Is.EqualTo(1));
             Assert.That(collectionDst.VersionNumberOf(objectFromDst), Is.EqualTo(2));
             objectFromDst = collectionDst[newObject2.Id];
-            Assert.True( objectFromDst.Equals( newObject2 ) );
+            Assert.That(objectFromDst, Is.EqualTo(newObject2));
             Assert.That(collectionDst.FirstVersionNumberOf(objectFromDst), Is.EqualTo(1));
             Assert.That(collectionDst.VersionNumberOf(objectFromDst), Is.EqualTo(1));
         }
