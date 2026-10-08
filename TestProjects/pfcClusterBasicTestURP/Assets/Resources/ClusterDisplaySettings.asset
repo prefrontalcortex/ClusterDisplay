@@ -15,13 +15,13 @@ MonoBehaviour:
   m_EnableOnPlay: 1
   m_ClusterParams:
     ClusterLogicSpecified: 0
-    Role: 0
+    Role: 1
     NodeID: 0
     RepeaterCount: 0
     BackupCount: 0
     Port: 25690
     MulticastAddress: 224.0.1.0
-    AdapterName: 
+    AdapterName: Ethernet
     TargetFps: -1
     DelayRepeaters: 0
     HeadlessEmitter: 0

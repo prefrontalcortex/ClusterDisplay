@@ -1,0 +1,1 @@
+[{"id":"571db01a-6f85-4f9d-a52b-4cf8eaf1e21d","name":"qwe","launchPads":[{"identifier":"6653f2ea-a0cc-41ee-a2aa-f5bfb1303fb5","name":"qwe","endpoint":"http://127.0.0.1:8200/","suitableFor":["clusterNode"]}],"hangarBay":{"identifier":"571db01a-6f85-4f9d-a52b-4cf8eaf1e21d","endpoint":"http://127.0.0.1:8100/"}}]

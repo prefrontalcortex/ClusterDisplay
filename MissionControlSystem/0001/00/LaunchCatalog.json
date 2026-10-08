@@ -1,0 +1,12 @@
+{
+  "name": "pfcClusterBasicTestURP",
+  "version": "1.0.0",
+  "launchEntries": [
+    {
+      "id": "pfcClusterBasicTestURP",
+      "path": "pfcClusterBasicTestURP.exe",
+      "arguments": "",
+      "workingDirectory": "."
+    }
+  ]
+}
