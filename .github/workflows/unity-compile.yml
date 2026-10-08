@@ -1,0 +1,59 @@
+name: Unity compile
+
+# Compiles the test projects with the target Unity version (see MIGRATION_PROGRESS.md) so that API removals are
+# detected early.  Needs a Unity license: add the secrets UNITY_LICENSE (personal, .ulf content) or
+# UNITY_SERIAL + UNITY_EMAIL + UNITY_PASSWORD to the repository, then set the repository variable UNITY_CI to 'true'.
+# Without it the jobs are skipped (so the workflow does not turn red on forks without a license).
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+      - 'dotnet-update'
+    paths:
+      - 'source/**'
+      - 'TestProjects/pfcClusterBasicTestURP/**'
+      - 'TestProjects/GraphicsDemoProject/**'
+      - '.github/workflows/unity-compile.yml'
+  pull_request:
+    paths:
+      - 'source/**'
+      - 'TestProjects/pfcClusterBasicTestURP/**'
+      - 'TestProjects/GraphicsDemoProject/**'
+      - '.github/workflows/unity-compile.yml'
+
+env:
+  UNITY_VERSION: 6000.3.13f1
+
+jobs:
+  compile:
+    if: ${{ vars.UNITY_CI == 'true' }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - TestProjects/pfcClusterBasicTestURP   # URP
+          - TestProjects/GraphicsDemoProject      # HDRP
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/cache@v4
+        with:
+          path: ${{ matrix.project }}/Library
+          key: Library-${{ matrix.project }}-${{ env.UNITY_VERSION }}-${{ hashFiles(format('{0}/Packages/packages-lock.json', matrix.project)) }}
+          restore-keys: Library-${{ matrix.project }}-${{ env.UNITY_VERSION }}-
+      # Compiles the scripts (and fails on compiler errors) by opening the project in batchmode.
+      - uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          projectPath: ${{ matrix.project }}
+          unityVersion: ${{ env.UNITY_VERSION }}
+          testMode: editmode
+          githubToken: ${{ secrets.GITHUB_TOKEN }}

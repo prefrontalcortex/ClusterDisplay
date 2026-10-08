@@ -3,9 +3,12 @@ name: Mission Control
 on:
   push:
     branches:
+      - 'main'
+      - 'dotnet-update'
       - 'dev'
     paths:
       - 'MissionControlSystem/**'
+      - '.github/workflows/mission-control-ci.yml'
       - 'source/com.unity.cluster-display/Runtime/MissionControl/Shared/IIncrementalCollectionObject.cs'
       - 'source/com.unity.cluster-display/Runtime/MissionControl/Shared/IncrementalCollection.cs'
       - 'source/com.unity.cluster-display/Runtime/MissionControl/Shared/IncrementalCollectionObjectData.cs'
@@ -19,9 +22,12 @@ on:
 
   pull_request:
     branches:
+      - 'main'
+      - 'dotnet-update'
       - 'dev'
     paths:
       - 'MissionControlSystem/**'
+      - '.github/workflows/mission-control-ci.yml'
       - 'source/com.unity.cluster-display/Runtime/MissionControl/Shared/IIncrementalCollectionObject.cs'
       - 'source/com.unity.cluster-display/Runtime/MissionControl/Shared/IncrementalCollection.cs'
       - 'source/com.unity.cluster-display/Runtime/MissionControl/Shared/IncrementalCollectionObjectData.cs'
@@ -42,11 +48,11 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup .NET
-      uses: actions/setup-dotnet@v2
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 8.0.x
     - name: Restore dependencies
       run: dotnet restore ${{ env.projectpath }}
     - name: Build
