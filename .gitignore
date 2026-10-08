@@ -49,3 +49,13 @@ upm-ci~/
 .bin/
 .download/
 .Editor/
+
+# MissionControl build/package output (regenerate with MissionControlSystem/Build.ps1; never commit)
+MissionControlSystem/0001/
+MissionControlSystem/_ouput/
+MissionControlSystem/Out/
+MissionControlSystem/UI/
+MissionControlSystem/*.zip
+
+# Player builds of test projects (catalog MD5s break when line endings change)
+TestProjects/*/builds/

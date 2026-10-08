@@ -53,3 +53,9 @@
 *.rns filter=lfs diff=lfs merge=lfs -text
 *.reason filter=lfs diff=lfs merge=lfs -text
 *.lxo filter=lfs diff=lfs merge=lfs -text
+
+
+## Player builds / MissionControl assets ##
+# LaunchCatalog.json stores an MD5 per file: never normalize line endings of build content.
+TestProjects/**/builds/** -text
+MissionControlSystem/0001/** -text
