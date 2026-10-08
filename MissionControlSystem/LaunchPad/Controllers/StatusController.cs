@@ -25,7 +25,7 @@ namespace Unity.ClusterDisplay.MissionControl.LaunchPad.Controllers
             // New status not yet ready, setup to wait until it is ready or up to 2 minutes (to avoid blocking calls
             // to stay blocked for too long as some middleware (like some component of Azure WebApp) don't like http
             // calls that take too long to give a response...
-            double maxSec = Convert.ToDouble(m_Configuration["blockingCallMaxSec"]);
+            double maxSec = Convert.ToDouble(m_Configuration["blockingCallMaxSec"], System.Globalization.CultureInfo.InvariantCulture);
             var maxWaitTask = Task.Delay(TimeSpan.FromSeconds(maxSec));
             var completedTask = await Task.WhenAny(futureStatus, maxWaitTask);
 

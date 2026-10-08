@@ -13,7 +13,7 @@ namespace Unity.ClusterDisplay.MissionControl
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            return TimeSpan.FromSeconds(Convert.ToSingle(reader.Value));
+            return TimeSpan.FromSeconds(Convert.ToSingle(reader.Value, System.Globalization.CultureInfo.InvariantCulture));
         }
 
         public override bool CanConvert(Type objectType)

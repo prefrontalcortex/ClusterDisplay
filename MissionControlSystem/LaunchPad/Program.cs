@@ -37,7 +37,7 @@ builder.Services.AddHealthService();
 builder.Services.Configure<JsonOptions>(options => { Json.AddToSerializerOptions(options.SerializerOptions); });
 builder.Services.Configure<MvcJsonOptions>(options => { Json.AddToSerializerOptions(options.JsonSerializerOptions); });
 builder.Services.Configure<HostOptions>(options => {
-    options.ShutdownTimeout = TimeSpan.FromSeconds(Convert.ToInt32(builder.Configuration["shutdownTimeoutSec"])); });
+    options.ShutdownTimeout = TimeSpan.FromSeconds(Convert.ToInt32(builder.Configuration["shutdownTimeoutSec"], System.Globalization.CultureInfo.InvariantCulture)); });
 
 const string corsPolicyName = "CorsPolicy";
 builder.Services.AddCors(options =>

@@ -24,7 +24,8 @@ namespace Unity.ClusterDisplay.MissionControl.LaunchPad.Services
             var result = PdhApi.PdhOpenQuery(null, IntPtr.Zero, out m_CpuQuery);
             if (result == PdhApi.ERROR_SUCCESS)
             {
-                result = PdhApi.PdhAddCounter(m_CpuQuery, k_CpuCounterName, IntPtr.Zero, out m_CpuCounter);
+                // English counter name -> works on every Windows UI language (PdhAddCounter expects a localized name).
+                result = PdhApi.PdhAddEnglishCounter(m_CpuQuery, k_CpuCounterName, IntPtr.Zero, out m_CpuCounter);
                 if (result == PdhApi.ERROR_SUCCESS)
                 {
                     Task.Run(UpdateCpuUsageAsync);
@@ -170,6 +171,13 @@ namespace Unity.ClusterDisplay.MissionControl.LaunchPad.Services
             [DllImport("pdh.dll", SetLastError = true, CharSet = CharSet.Auto)]
             public static extern UInt32 PdhAddCounter(QueryHandle hQuery, string szFullCounterPath, IntPtr dwUserData,
                 out CounterHandle phCounter);
+
+            /// <summary>
+            /// Adds a counter the query using its English (not localized) name and passes out a handle to the counter.
+            /// </summary>
+            [DllImport("pdh.dll", SetLastError = true, CharSet = CharSet.Auto)]
+            public static extern UInt32 PdhAddEnglishCounter(QueryHandle hQuery, string szFullCounterPath,
+                IntPtr dwUserData, out CounterHandle phCounter);
 
             /// <summary>
             /// Retrieves a sample from the source.

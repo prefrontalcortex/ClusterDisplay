@@ -34,11 +34,11 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
                 }
                 else if (value is long)
                 {
-                    m_Value = Convert.ToInt32(value);
+                    m_Value = Convert.ToInt32(value, System.Globalization.CultureInfo.InvariantCulture);
                 }
                 else if (value is double)
                 {
-                    m_Value = Convert.ToSingle(value);
+                    m_Value = Convert.ToSingle(value, System.Globalization.CultureInfo.InvariantCulture);
                 }
                 else
                 {

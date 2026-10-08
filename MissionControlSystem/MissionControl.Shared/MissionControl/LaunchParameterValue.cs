@@ -41,7 +41,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
                         case JsonValueKind.Number:
                             if (jsonElement.TryGetInt64(out var int64))
                             {
-                                m_Value = Convert.ToInt32(int64);
+                                m_Value = Convert.ToInt32(int64, System.Globalization.CultureInfo.InvariantCulture);
                             }
                             else
                             {

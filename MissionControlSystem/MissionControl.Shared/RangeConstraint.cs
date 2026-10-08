@@ -31,7 +31,7 @@ namespace Unity.ClusterDisplay.MissionControl
         /// <see cref="Min"/> as an <see cref="int"/>.
         /// </summary>
         [JsonIgnore]
-        public int MinInt32 => Convert.ToInt32(Min);
+        public int MinInt32 => Convert.ToInt32(Min, System.Globalization.CultureInfo.InvariantCulture);
 
         /// <summary>
         /// <see cref="Min"/> as an <see cref="int"/> incremented by 1 if not <see cref="MinExclusive"/> (so that it 
@@ -55,7 +55,7 @@ namespace Unity.ClusterDisplay.MissionControl
                 {
                     return decimal.MinValue;
                 }
-                decimal ret = Convert.ToDecimal(Min);
+                decimal ret = Convert.ToDecimal(Min, System.Globalization.CultureInfo.InvariantCulture);
                 decimal originalRet = ret;
                 if (MinExclusive)
                 {
@@ -73,7 +73,7 @@ namespace Unity.ClusterDisplay.MissionControl
         /// <see cref="Min"/> as an <see cref="float"/>.
         /// </summary>
         [JsonIgnore]
-        public float MinSingle => Convert.ToSingle(Min);
+        public float MinSingle => Convert.ToSingle(Min, System.Globalization.CultureInfo.InvariantCulture);
 
         /// <summary>
         /// Is the allowed range defined with &gt;= (true) or &gt; (false).
@@ -95,7 +95,7 @@ namespace Unity.ClusterDisplay.MissionControl
         /// <see cref="Max"/> as an <see cref="int"/>.
         /// </summary>
         [JsonIgnore]
-        public int MaxInt32 => Convert.ToInt32(Max);
+        public int MaxInt32 => Convert.ToInt32(Max, System.Globalization.CultureInfo.InvariantCulture);
 
         /// <summary>
         /// <see cref="Max"/> as an <see cref="int"/> decremented by 1 if !<see cref="MaxExclusive"/> (so that it can
@@ -119,7 +119,7 @@ namespace Unity.ClusterDisplay.MissionControl
                 {
                     return decimal.MaxValue;
                 }
-                decimal ret = Convert.ToDecimal(Max);
+                decimal ret = Convert.ToDecimal(Max, System.Globalization.CultureInfo.InvariantCulture);
                 decimal originalRet = ret;
                 if (MaxExclusive)
                 {
@@ -137,7 +137,7 @@ namespace Unity.ClusterDisplay.MissionControl
         /// <see cref="Max"/> as an <see cref="float"/>.
         /// </summary>
         [JsonIgnore]
-        public float MaxSingle => Convert.ToSingle(Max);
+        public float MaxSingle => Convert.ToSingle(Max, System.Globalization.CultureInfo.InvariantCulture);
 
         /// <summary>
         /// Is the allowed range defined with &lt; (true) or &lt;= (false).
@@ -168,7 +168,7 @@ namespace Unity.ClusterDisplay.MissionControl
                 float floatValue;
                 try
                 {
-                    floatValue = Convert.ToSingle(value);
+                    floatValue = Convert.ToSingle(value, System.Globalization.CultureInfo.InvariantCulture);
                 }
                 catch (Exception)
                 {
@@ -223,7 +223,7 @@ namespace Unity.ClusterDisplay.MissionControl
                 int or float or null => value,
                 double doubleValue => (float)doubleValue,
                 JsonElement jsonValue => ConvertJsonElementToValueObject(jsonValue),
-                _ => Convert.ToInt32(value)
+                _ => Convert.ToInt32(value, System.Globalization.CultureInfo.InvariantCulture)
             };
         }
 

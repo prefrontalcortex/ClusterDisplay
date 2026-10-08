@@ -36,13 +36,13 @@ namespace Unity.ClusterDisplay.MissionControl
         /// <see cref="Min"/> as an <see cref="int"/>.
         /// </summary>
         [JsonIgnore]
-        public int MinInt32 => Convert.ToInt32(Min);
+        public int MinInt32 => Convert.ToInt32(Min, System.Globalization.CultureInfo.InvariantCulture);
 
         /// <summary>
         /// <see cref="Min"/> as an <see cref="float"/>.
         /// </summary>
         [JsonIgnore]
-        public float MinSingle => Convert.ToSingle(Min);
+        public float MinSingle => Convert.ToSingle(Min, System.Globalization.CultureInfo.InvariantCulture);
 
         /// <summary>
         /// Is the allowed range defined with &gt;= (true) or &gt; (false).
@@ -69,13 +69,13 @@ namespace Unity.ClusterDisplay.MissionControl
         /// <see cref="Max"/> as an <see cref="int"/>.
         /// </summary>
         [JsonIgnore]
-        public int MaxInt32 => Convert.ToInt32(Max);
+        public int MaxInt32 => Convert.ToInt32(Max, System.Globalization.CultureInfo.InvariantCulture);
 
         /// <summary>
         /// <see cref="Max"/> as an <see cref="float"/>.
         /// </summary>
         [JsonIgnore]
-        public float MaxSingle => Convert.ToSingle(Max);
+        public float MaxSingle => Convert.ToSingle(Max, System.Globalization.CultureInfo.InvariantCulture);
 
         /// <summary>
         /// Is the allowed range defined with &lt; (true) or &lt;= (false).
@@ -122,7 +122,7 @@ namespace Unity.ClusterDisplay.MissionControl
             {
                 int or float or null => value,
                 double doubleValue => (float)doubleValue,
-                _ => Convert.ToInt32(value)
+                _ => Convert.ToInt32(value, System.Globalization.CultureInfo.InvariantCulture)
             };
         }
 

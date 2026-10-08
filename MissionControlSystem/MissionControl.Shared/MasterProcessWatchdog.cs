@@ -31,7 +31,7 @@ namespace Unity.ClusterDisplay.MissionControl
             Process toWatch;
             try
             {
-                int processId = Convert.ToInt32(processIdString);
+                int processId = Convert.ToInt32(processIdString, System.Globalization.CultureInfo.InvariantCulture);
                 toWatch = Process.GetProcessById(processId);
             }
             catch(Exception)

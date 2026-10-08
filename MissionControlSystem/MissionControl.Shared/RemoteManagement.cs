@@ -49,9 +49,9 @@ namespace Unity.ClusterDisplay.MissionControl
                     int waitSeconds;
                     try
                     {
-                        processId = Convert.ToInt32(args[argIdx + 1]);
+                        processId = Convert.ToInt32(args[argIdx + 1], System.Globalization.CultureInfo.InvariantCulture);
                         semaphoreName = args[argIdx + 2];
-                        waitSeconds = Convert.ToInt32(args[argIdx + 3]);
+                        waitSeconds = Convert.ToInt32(args[argIdx + 3], System.Globalization.CultureInfo.InvariantCulture);
                     }
                     catch
                     {

@@ -75,13 +75,13 @@ else
 
     public int IntValue
     {
-        get => Convert.ToInt32(Entry.Value);
+        get => Convert.ToInt32(Entry.Value, System.Globalization.CultureInfo.InvariantCulture);
         set => SetValue(value);
     }
 
     public float FloatValue
     {
-        get => Convert.ToSingle(Entry.Value);
+        get => Convert.ToSingle(Entry.Value, System.Globalization.CultureInfo.InvariantCulture);
         set => SetValue(value);
     }
 

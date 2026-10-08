@@ -235,7 +235,7 @@ namespace Unity.ClusterDisplay.MissionControl.LaunchCatalog
                 }
                 throw new InvalidCastException($"Cannot convert {jsonValue} to {typeof(int)}.");
             }
-            return Convert.ToInt32(value);
+            return Convert.ToInt32(value, System.Globalization.CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -257,7 +257,7 @@ namespace Unity.ClusterDisplay.MissionControl.LaunchCatalog
                 }
                 throw new InvalidCastException($"Cannot convert {jsonValue} to {typeof(float)}.");
             }
-            float ret = Convert.ToSingle(value);
+            float ret = Convert.ToSingle(value, System.Globalization.CultureInfo.InvariantCulture);
             if (!float.IsFinite(ret))
             {
                 throw new InvalidCastException($"Cannot convert {value} to {typeof(float)}.");
@@ -285,7 +285,7 @@ namespace Unity.ClusterDisplay.MissionControl.LaunchCatalog
                     _ => throw new InvalidCastException($"Cannot convert {jsonValue} to {typeof(string)}.")
                 };
             }
-            var convertedString = Convert.ToString(value);
+            var convertedString = Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture);
             if (convertedString == null)
             {
                 throw new NullReferenceException("Converting to string resulted in a null value.");

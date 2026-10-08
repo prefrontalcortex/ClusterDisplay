@@ -70,7 +70,7 @@ namespace Unity.ClusterDisplay.MissionControl.EngineeringUI.Components
                 }
                 set
                 {
-                    SetDesiredValueFromToSerialize(v => Convert.ToInt32(v), value);
+                    SetDesiredValueFromToSerialize(v => Convert.ToInt32(v, System.Globalization.CultureInfo.InvariantCulture), value);
                 }
             }
 
@@ -89,7 +89,7 @@ namespace Unity.ClusterDisplay.MissionControl.EngineeringUI.Components
                 }
                 set
                 {
-                    SetDesiredValueFromToSerialize(v => Convert.ToSingle(v), value);
+                    SetDesiredValueFromToSerialize(v => Convert.ToSingle(v, System.Globalization.CultureInfo.InvariantCulture), value);
                 }
             }
 
@@ -108,7 +108,7 @@ namespace Unity.ClusterDisplay.MissionControl.EngineeringUI.Components
                 }
                 set
                 {
-                    SetDesiredValueFromToSerialize(v => Convert.ToString(v)!, value);
+                    SetDesiredValueFromToSerialize(v => Convert.ToString(v, System.Globalization.CultureInfo.InvariantCulture)!, value);
                 }
             }
 
