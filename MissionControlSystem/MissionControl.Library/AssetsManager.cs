@@ -140,8 +140,11 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl.Library
             }
             catch (MD5MismatchException e)
             {
-                throw new CatalogException($"MD5 checksum mismatch.  Is the asset produced with support for Mission " +
-                    $"Control (or we are using an old LaunchCatalog.json)?", e);
+                throw new CatalogException($"MD5 checksum mismatch.  {e.Message}  Is the asset produced with " +
+                    $"support for Mission Control (or we are using an old LaunchCatalog.json)?  If the asset was " +
+                    $"copied or checked out through git, make sure line endings of its files were not converted " +
+                    $"(core.autocrlf), the checksums in LaunchCatalog.json are computed on the files as produced " +
+                    $"by the build.", e);
             }
             catch
             {
@@ -292,10 +295,32 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl.Library
             Guid fileBlobId;
             using (var openedFile = await assetSource.GetFileContentAsync(file.Path))
             {
-                byte[] md5Bytes = Convert.FromHexString(file.Md5);
+                byte[] md5Bytes;
+                try
+                {
+                    md5Bytes = Convert.FromHexString(file.Md5);
+                }
+                catch (FormatException e)
+                {
+                    throw new CatalogException($"MD5 \"{file.Md5}\" of file {file.Path} is not a valid hexadecimal " +
+                        $"string.", e);
+                }
+                if (md5Bytes.Length != 16)
+                {
+                    throw new CatalogException($"MD5 \"{file.Md5}\" of file {file.Path} is not 16 bytes long.");
+                }
                 var md5 = new Guid(md5Bytes);
-                fileBlobId = await m_FileBlobsManager.AddFileBlobAsync(openedFile.Stream, openedFile.Length, md5,
-                    addFileBlobsCancelToken);
+                try
+                {
+                    fileBlobId = await m_FileBlobsManager.AddFileBlobAsync(openedFile.Stream, openedFile.Length, md5,
+                        addFileBlobsCancelToken);
+                }
+                catch (MD5MismatchException e)
+                {
+                    // Add the name of the file, otherwise it is very hard to find which of the (many) files of an
+                    // asset does not match.
+                    throw new MD5MismatchException($"File {file.Path}: {e.Message}");
+                }
             }
 
             using (var lockedFile = await m_FileBlobsManager.LockFileBlob(fileBlobId))

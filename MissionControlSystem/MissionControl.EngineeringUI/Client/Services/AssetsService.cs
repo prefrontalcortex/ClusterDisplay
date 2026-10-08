@@ -23,6 +23,9 @@ namespace Unity.ClusterDisplay.MissionControl.EngineeringUI.Services
         {
             m_HttpClient = httpClient;
             m_HttpClient.BaseAddress = configuration.GetMissionControlUri();
+            // Adding an asset (PostAsync) returns only once MissionControl processed (md5 + compression) every file of
+            // the asset, this easily takes longer than the default HttpClient timeout of 100 seconds.
+            m_HttpClient.Timeout = TimeSpan.FromMinutes(30);
 
             collectionsUpdateService.RegisterForUpdates(IncrementalCollectionsName.Assets, CollectionUpdate);
         }
