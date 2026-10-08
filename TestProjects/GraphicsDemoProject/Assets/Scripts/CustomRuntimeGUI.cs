@@ -2,6 +2,10 @@ using System;
 using UnityEngine;
 using Unity.ClusterDisplay.Graphics.Example;
 
+public class RuntimeGUI
+{
+}
+
 [ExecuteAlways]
 public class CustomRuntimeGUI : RuntimeGUI
 {
@@ -11,7 +15,7 @@ public class CustomRuntimeGUI : RuntimeGUI
     [SerializeField]
     SwitchVolumeProfiles m_SwitchVolumeProfiles;
 
-    override public void OnCustomGUI()
+    public void OnCustomGUI()
     {
         if (m_SwitchVolumeProfiles != null)
             m_SwitchVolumeProfiles.DrawGUI();
