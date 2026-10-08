@@ -13,8 +13,8 @@ namespace Unity.ClusterDisplay.Graphics.Editor
         static SerializedProperty GetRenderPasses()
         {
             // We assume that an asset must be set, and the array of ScriptableRenderData should not be empty.
-            var urpAsset = GraphicsSettings.defaultRenderPipeline as UniversalRenderPipelineAsset;
-            Assert.IsNotNull(urpAsset, $"Expected GraphicsSettings.renderPipelineAsset to be an instance of {nameof(UniversalRenderPipelineAsset)}");
+            var urpAsset = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
+            Assert.IsNotNull(urpAsset, $"Expected GraphicsSettings.currentRenderPipeline to be an instance of {nameof(UniversalRenderPipelineAsset)}");
 
             var rendererDataField = typeof(UniversalRenderPipelineAsset).GetField("m_RendererDataList", BindingFlags.NonPublic | BindingFlags.Instance);
             var renderData = rendererDataField.GetValue(urpAsset) as ScriptableRendererData[];
@@ -97,7 +97,7 @@ namespace Unity.ClusterDisplay.Graphics.Editor
             return renderFeature;
         }
 
-        public static bool CurrentPipelineIsUrp() => GraphicsSettings.defaultRenderPipeline is UniversalRenderPipelineAsset;
+        public static bool CurrentPipelineIsUrp() => GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset;
     }
 }
 #endif
