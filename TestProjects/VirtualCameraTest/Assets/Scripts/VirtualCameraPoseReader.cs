@@ -83,12 +83,12 @@ public class VirtualCameraPoseReader : CompanionAppDevice<IVirtualCameraClient>
     }
 
     // Update is called once per frame
-    public override void UpdateDevice()
+    protected override void UpdateDevice()
     {
         // Nothing to do
     }
 
-    public override void LiveUpdate()
+    protected override void LiveUpdate()
     {
         if (m_Actor == null) return;
         m_Actor.localPosition = m_LatestPose.position;

@@ -331,30 +331,21 @@ namespace Unity.ClusterDisplay.MissionControl
             testCollection.Add(object2);
             TestObject object3 = new(Guid.NewGuid()) { Property = 1234 };
 
-            Assert.Multiple(() =>
-            {
-                Assert.That(testCollection.ContainsKey(object1.Id), Is.True);
-                Assert.That(testCollection.ContainsKey(object2.Id), Is.True);
-                Assert.That(testCollection.ContainsKey(object3.Id), Is.False);
-            });
+            Assert.That(testCollection.ContainsKey(object1.Id), Is.True);
+            Assert.That(testCollection.ContainsKey(object2.Id), Is.True);
+            Assert.That(testCollection.ContainsKey(object3.Id), Is.False);
 
             testCollection.Remove(object2.Id);
 
-            Assert.Multiple(() =>
-            {
-                Assert.That(testCollection.ContainsKey(object1.Id), Is.True);
-                Assert.That(testCollection.ContainsKey(object2.Id), Is.False);
-                Assert.That(testCollection.ContainsKey(object3.Id), Is.False);
-            });
+            Assert.That(testCollection.ContainsKey(object1.Id), Is.True);
+            Assert.That(testCollection.ContainsKey(object2.Id), Is.False);
+            Assert.That(testCollection.ContainsKey(object3.Id), Is.False);
 
             testCollection.Remove(object1.Id);
 
-            Assert.Multiple(() =>
-            {
-                Assert.That(testCollection.ContainsKey(object1.Id), Is.False);
-                Assert.That(testCollection.ContainsKey(object2.Id), Is.False);
-                Assert.That(testCollection.ContainsKey(object3.Id), Is.False);
-            });
+            Assert.That(testCollection.ContainsKey(object1.Id), Is.False);
+            Assert.That(testCollection.ContainsKey(object2.Id), Is.False);
+            Assert.That(testCollection.ContainsKey(object3.Id), Is.False);
         }
 
         [Test]

@@ -52,7 +52,7 @@ Use these Unity demo projects to try out the Cluster Display features in various
 | Project | Description |
 |:---|:---|
 | **[GraphicsDemoProject](TestProjects/GraphicsDemoProject)** | Unity demo project to try out Cluster Display in HDRP with various Unity features. |
-| **[Mosys](TestProjects/Mosys)** | Unity demo project to try out Cluster Display with a Mo-Sys camera tracking device. |
+| **[Mosys](TestProjects/Mosys)** | Unity demo project to try out Cluster Display with a Mo-Sys camera tracking device. *Not maintained: depends on the third-party packages `com.unity.live-capture.mosys` and has not been migrated to Unity 6.* |
 | **[VirtualCameraTest](TestProjects/VirtualCameraTest)** | Unity demo project to try out Cluster Display with a Live Capture Virtual Camera. |
 
 ### Test the Cluster Display packages
@@ -65,7 +65,6 @@ Use these Unity projects to run various tests against the Cluster Display packag
 | **[ClusterSyncTest](TestProjects/ClusterSyncTests)** | Unity project to test a cluster sync. |
 | **[GraphicsTestsHDRP](TestProjects/GraphicsTestsHDRP)** | Unity project to test Cluster Display with graphics in HDRP. |
 | **[GraphicsTestsURP](TestProjects/GraphicsTestsURP)** | Unity project to test Cluster Display with graphics in URP. |
-| **[LiveEditingTests](TestProjects/LiveEditingTests)** | Unity project to test Cluster Display and live editing. |
 | **[MissionControlTests](TestProjects/MissionControlTests)** | Unity project to test Cluster Display with Mission Control. |
 | **[RPCTests](TestProjects/RPCTests)** | Unity project to perform remote procedure call (RPC) tests with Cluster Display. |
 
