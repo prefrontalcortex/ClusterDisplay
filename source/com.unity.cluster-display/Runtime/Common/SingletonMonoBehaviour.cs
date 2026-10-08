@@ -25,7 +25,8 @@ namespace Unity.ClusterDisplay
                 return true;
             }
 
-            var instances = FindObjectsOfType<T>(includeInactive);
+            var instances = FindObjectsByType<T>(includeInactive ? FindObjectsInactive.Include : FindObjectsInactive.Exclude,
+                FindObjectsSortMode.None);
             if (instances.Length == 0)
             {
                 if (logError)

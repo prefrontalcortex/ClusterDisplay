@@ -52,7 +52,7 @@ namespace Unity.ClusterDisplay
         {
             if (!sceneInstances.TryGetValue(scenePath, out instance))
             {
-                var instances = FindObjectsOfType<SceneInstanceType>();
+                var instances = FindObjectsByType<SceneInstanceType>(FindObjectsSortMode.None);
                 if (instances.Length == 0)
                 {
                     return false;

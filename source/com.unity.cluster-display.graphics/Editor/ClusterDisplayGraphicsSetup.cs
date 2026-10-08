@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using Unity.ClusterDisplay.Graphics.Editor;
@@ -10,8 +9,8 @@ namespace Unity.ClusterDisplay.Graphics
         public static void SetupComponents()
         {
             GameObject gameObject;
-            var instances = Object.FindObjectsOfType<ClusterRenderer>();
-            if (instances.FirstOrDefault() is { } clusterRenderer)
+            var clusterRenderer = Object.FindFirstObjectByType<ClusterRenderer>();
+            if (clusterRenderer != null)
             {
                 gameObject = clusterRenderer.gameObject;
                 Debug.LogWarning("A ClusterRenderer already exists in the scene.");

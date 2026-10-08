@@ -21,9 +21,9 @@ namespace Unity.ClusterDisplay.Graphics.Tests
         {
             m_Camera = GraphicsTestUtil.FindUniqueMainCamera();
             Assert.IsNotNull(m_Camera, "Could not find main camera.");
-            m_ClusterRenderer = FindObjectOfType<ClusterRenderer>(true);
+            m_ClusterRenderer = FindFirstObjectByType<ClusterRenderer>(FindObjectsInactive.Include);
             Assert.IsNotNull(m_ClusterRenderer, $"Could not find {nameof(ClusterRenderer)}");
-            m_ImageComparisonSettings = FindObjectOfType<ImageComparisonSettings>();
+            m_ImageComparisonSettings = FindFirstObjectByType<ImageComparisonSettings>();
             Assert.IsNotNull(m_ImageComparisonSettings, "Missing image comparison settings.");
 
             EditorBridge.OpenGameView();

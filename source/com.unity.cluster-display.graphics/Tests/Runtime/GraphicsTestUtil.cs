@@ -26,7 +26,7 @@ namespace Unity.ClusterDisplay.Graphics.Tests
 
         public static Camera FindUniqueMainCamera()
         {
-            var cameras = Object.FindObjectsOfType<Camera>(true);
+            var cameras = Object.FindObjectsByType<Camera>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             foreach (var camera in cameras)
             {
                 if (camera.CompareTag(k_MainCameraTag))

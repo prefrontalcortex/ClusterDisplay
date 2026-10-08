@@ -12,7 +12,7 @@ namespace Unity.ClusterDisplay.Graphics.Tests
         protected override void InitializeTest()
         {
             base.InitializeTest();
-            m_Volume = FindObjectOfType<Volume>();
+            m_Volume = FindFirstObjectByType<Volume>();
             Assert.IsNotNull(m_Volume, $"Could not find ${nameof(Volume)}");
         }
 
