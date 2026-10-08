@@ -42,8 +42,9 @@
       "depth": 0,
       "source": "local",
       "dependencies": {
-        "com.unity.collections": "1.2.3",
-        "com.unity.nuget.newtonsoft-json": "3.0.2"
+        "com.unity.collections": "2.6.5",
+        "com.unity.nuget.newtonsoft-json": "3.2.2",
+        "com.unity.inputsystem": "1.14.0"
       }
     },
     "com.unity.cluster-display.graphics": {
@@ -88,6 +89,15 @@
       "source": "registry",
       "dependencies": {
         "com.unity.test-framework": "1.1.33"
+      },
+      "url": "https://packages.unity.com"
+    },
+    "com.unity.inputsystem": {
+      "version": "1.19.0",
+      "depth": 1,
+      "source": "registry",
+      "dependencies": {
+        "com.unity.modules.uielements": "1.0.0"
       },
       "url": "https://packages.unity.com"
     },

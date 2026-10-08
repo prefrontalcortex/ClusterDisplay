@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 using Unity.Collections;
 using UnityEngine;
 
-[assembly: InternalsVisibleTo("Unity.ClusterDisplay.RPC.Runtime")]
 
 namespace Unity.ClusterDisplay
 {
