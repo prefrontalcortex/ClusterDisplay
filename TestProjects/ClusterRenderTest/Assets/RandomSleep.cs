@@ -1,19 +1,19 @@
-using System;
 using System.Threading;
 using Unity.ClusterDisplay;
 using UnityEngine;
 
 public class RandomSleep : MonoBehaviour
 {
-    private int frame = 0;
-    private void Update()
+    int m_Frame;
+
+    void Update()
     {
-        frame++;
-        if (frame % 100 == 0)
+        m_Frame++;
+        if (m_Frame % 100 == 0 && ClusterDisplayState.TryGetRuntimeNodeId(out var nodeId))
         {
-            var rnd = new System.Random(ClusterSync.Instance.DynamicLocalNodeId + Time.frameCount);
-            var sleept = rnd.Next(1, 20);
-            Thread.Sleep(sleept);
+            var rnd = new System.Random(nodeId + Time.frameCount);
+            var sleepTime = rnd.Next(1, 20);
+            Thread.Sleep(sleepTime);
         }
     }
 }

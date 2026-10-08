@@ -59,3 +59,6 @@ MissionControlSystem/*.zip
 
 # Player builds of test projects (catalog MD5s break when line endings change)
 TestProjects/*/builds/
+
+# Unity 6 generated solution files
+*.slnx
