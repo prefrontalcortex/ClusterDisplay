@@ -1,4 +1,4 @@
-﻿using Unity.ClusterDisplay;
+using Unity.ClusterDisplay;
 using UnityEngine;
 
 [RequireComponent(typeof(UnityEngine.UI.Text))]
@@ -10,7 +10,7 @@ public class DebugComponent : MonoBehaviour
     {
         frmaes = 0;
         var text = this.GetComponent<UnityEngine.UI.Text>();
-        if (ClusterSync.Active)
+        if (ClusterDisplayState.GetIsActive())
         {
             text.text = $"Node {ClusterSync.Instance.DynamicLocalNodeId}";
         }
@@ -24,20 +24,24 @@ public class DebugComponent : MonoBehaviour
     {
         frmaes++;
         var text = this.GetComponent<UnityEngine.UI.Text>();
-        if (ClusterSync.Active)
+        if (ClusterDisplayState.GetIsActive())
         {
-            //if (frmaes % 60 == 0)
+            // Falls vorhanden, die Cluster-Instanz anweisen, sich zu terminieren
+            if (ServiceLocator.TryGet<IClusterSyncState>(out var state))
             {
-                text.text = ClusterSync.Instance.GetDebugString();
+                state.Terminate();
             }
-
-            if (Input.GetKeyUp(KeyCode.K) || Input.GetKeyUp(KeyCode.Q))
-                ClusterSync.Instance.ShutdownAllClusterNodes();
-            
+            else
+            {
+                // Fallback: kein Cluster-State vorhanden -> Anwendung beenden
+                Application.Quit(0);
+            }
         }
         else
         {
-            if (ClusterSync.Terminated)
+            // Ermittelt, ob die Cluster-Logik terminiert ist (neue Try-API)
+            ClusterDisplayState.TryGetIsTerminated(out var isTerminated);
+            if (isTerminated)
                 Application.Quit(0);
 
             text.text = "Cluster Rendering inactive";
