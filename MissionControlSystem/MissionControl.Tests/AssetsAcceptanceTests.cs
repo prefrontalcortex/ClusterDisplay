@@ -149,6 +149,29 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(exception!.Message, Does.Contain("Player.exe"));
         }
 
+        /// <summary>
+        /// Imports a real Unity build (folder containing a LaunchCatalog.json produced by the Mission Control
+        /// postprocessor).  Only runs when the environment variable CLUSTERDISPLAY_TEST_ASSET is set to that folder.
+        /// </summary>
+        [Test]
+        public async Task RealUnityBuild()
+        {
+            string? assetFolder = Environment.GetEnvironmentVariable("CLUSTERDISPLAY_TEST_ASSET");
+            if (string.IsNullOrEmpty(assetFolder))
+            {
+                Assert.Ignore("CLUSTERDISPLAY_TEST_ASSET not set.");
+            }
+
+            AssetPost newAsset = new() { Name = "RealUnityBuild", Description = "Produced by Unity" };
+            var assetId = await m_AssetsManager!.AddAssetAsync(newAsset, new FileAssetSource(assetFolder!));
+
+            using var lockedAssets = await m_AssetsManager.GetLockedReadOnlyAsync();
+            var asset = lockedAssets.Value[assetId];
+            Assert.That(asset.Launchables.Select(l => l.Type), Is.EquivalentTo(new[] { "capcom", "clusterNode" }));
+            Assert.That(asset.Launchables.All(l => l.Payloads.Any()), Is.True);
+            Assert.That(asset.StorageSize, Is.GreaterThan(0));
+        }
+
         Task<Guid> AddAsset()
         {
             AssetPost newAsset = new() { Name = "TestAsset", Description = "TestDescription" };

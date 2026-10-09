@@ -212,7 +212,13 @@ namespace Unity.ClusterDisplay.Graphics
         {
             if (m_WarpMaterial == null)
             {
-                m_WarpMaterial = new Material(Shader.Find(k_WarpShaderName));
+                var warpShader = Shader.Find(k_WarpShaderName);
+                if (warpShader == null)
+                {
+                    throw new InvalidOperationException($"Could not find shader \"{k_WarpShaderName}\", " +
+                        "make sure it has been added to the list of Always Included shaders");
+                }
+                m_WarpMaterial = new Material(warpShader);
             }
 
             if (m_BlankBackground == null)

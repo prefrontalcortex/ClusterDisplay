@@ -16,6 +16,7 @@ Ziel: kompiliert ohne Fehler und ohne Obsolete-Warnungen, stabiler Frame-Lock ü
 - EditMode-Tests: `.claude/skills/unity-compile-check/scripts/run_tests.sh [projektpfad] EditMode`
 - Unity-Pfad: über `UNITY_PATH` setzen, sonst wird er aus der ProjectVersion abgeleitet.
 - Batchmode läuft nicht, solange der Editor das Projekt geöffnet hat (`Temp/UnityLockfile`).
+- Unity-Batchmode-Prozesse immer mit Timeout starten: nach einem Player-Build blieb Unity einmal ~7 h in einer Fehlerschleife hängen (Log wächst auf Hunderte MB). Nach „Build Finished, Result: Success“ im Log den Prozess beenden.
 
 ## Harte Regeln
 1. Eine Aufgabe aus `MIGRATION_PROGRESS.md` pro Session/Commit. Danach Compile-Check + Tests, Ergebnis im Backlog eintragen.
