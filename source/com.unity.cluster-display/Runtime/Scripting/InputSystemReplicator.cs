@@ -42,6 +42,18 @@ namespace Unity.ClusterDisplay.Scripting
         static object s_InjectedReplicatorLock = new();
         static InputSystemReplicator s_InjectedReplicator;
 
+        /// <summary>
+        /// Forget the injected replicator left over by a previous play session.
+        /// </summary>
+        /// <remarks>Statics survive when entering play mode without domain reload (editor).</remarks>
+        internal static void ResetStaticState()
+        {
+            lock (s_InjectedReplicatorLock)
+            {
+                s_InjectedReplicator = null;
+            }
+        }
+
         struct ClusterInputSystemUpdate
         {
 

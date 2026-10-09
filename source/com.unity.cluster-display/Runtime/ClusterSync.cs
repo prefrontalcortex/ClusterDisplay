@@ -29,6 +29,23 @@ namespace Unity.ClusterDisplay
             }
         }
 
+        /// <summary>
+        /// Forget everything that a previous play session left in static variables.
+        /// </summary>
+        /// <remarks>When entering play mode without domain reload (editor option), statics survive from one play
+        /// session to the next.  A stale <see cref="IClusterSyncState"/> would be found by
+        /// <see cref="EnableClusterSync"/> as an "existing instance" and cluster logic would never start again.
+        /// </remarks>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        internal static void ResetStaticState()
+        {
+            ServiceLocator.Withdraw<IClusterSyncState>(false);
+#if ENABLE_INPUT_SYSTEM
+            ServiceLocator.Withdraw<InputSystemReplicator>(false);
+            InputSystemReplicator.ResetStaticState();
+#endif
+        }
+
         static void EnableClusterSync()
         {
             if (ServiceLocator.TryGet<IClusterSyncState>(out var clusterSync))
