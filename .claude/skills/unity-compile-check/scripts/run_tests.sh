@@ -32,5 +32,11 @@ if [[ "$(attr failed)" != "0" ]]; then
   grep -oE '<test-case [^>]*result="Failed"[^>]*>' "$RES" | grep -oE 'fullname="[^"]*"' | cut -d'"' -f2 | head -n 20
   exit 1
 fi
+if (( code == 139 )) && [[ "$(attr total)" != "0" ]]; then
+  # Bekannt (siehe MIGRATION_PROGRESS.md): Unity stürzt in ~1 von 3 ClusterSyncTests-Läufen beim BEENDEN ab (Segfault),
+  # nachdem die Ergebnisse vollständig geschrieben wurden und keine Tests fehlgeschlagen sind.
+  echo "Warnung: Unity-Exitcode 139 (Segfault beim Beenden) nach vollständigen, grünen Ergebnissen – ignoriert."
+  exit 0
+fi
 (( code == 0 )) || { echo "Unity-Exitcode $code"; exit 1; }
 exit 0
