@@ -234,6 +234,7 @@ namespace Unity.ClusterDisplay
         internal static readonly BoolArgument disableQuadroSync             = new BoolArgument("-disableQuadroSync");
 
         internal static readonly StringArgument adapterName                 = new StringArgument("-adapterName");
+        internal static readonly StringArgument timeSync                    = new StringArgument("-timeSync");
         internal static readonly StringArgument multicastAddress            = new StringArgument(GetNodeType, tryParse: TryParseMulticastAddress);
         internal static readonly IntArgument port                           = new IntArgument(GetNodeType, ParsePort);
 
@@ -255,6 +256,7 @@ namespace Unity.ClusterDisplay
             targetFps,
             overscan,
             adapterName,
+            timeSync,
             multicastAddress,
             port,
             handshakeTimeout,

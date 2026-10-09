@@ -56,6 +56,30 @@ namespace Unity.ClusterDisplay
 #endif
     }
 
+    /// <summary>
+    /// How the time of the engine (<see cref="Time.time"/>, <see cref="Time.deltaTime"/>,
+    /// <see cref="Time.frameCount"/>, ...) is kept the same on every node.
+    /// </summary>
+    public enum TimeSync
+    {
+        /// <summary>
+        /// The emitter sends the state of the engine's time manager with every frame and repeaters apply it (uses
+        /// <c>ClusterSerialization</c>, deprecated by Unity and without replacement in the public API).  Time follows
+        /// the real frame time of the emitter.
+        /// </summary>
+        EngineState = 0,
+
+        /// <summary>
+        /// Every node runs with the same fixed time step (<see cref="Time.captureFramerate"/> set to
+        /// <see cref="ClusterParams.TargetFps"/>) from the very first frame, nothing about time is sent over the
+        /// network.  Time, delta time and frame count are identical on every node as long as all nodes start
+        /// synchronizing at the same frame.  A frame that takes longer than the time step plays in slow motion
+        /// instead of skipping ahead, so <see cref="ClusterParams.TargetFps"/> should be the refresh rate of the
+        /// displays.
+        /// </summary>
+        FixedStep = 1
+    }
+
     [Serializable]
     public struct ClusterParams
     {
@@ -93,6 +117,10 @@ namespace Unity.ClusterDisplay
 
         [Tooltip("Whether inputs should be synchronized.")]
         public InputSync InputSync;
+
+        [Tooltip("How the time of the engine is kept the same on every node.  Fixed Step requires Target Fps to be " +
+            "set (to the refresh rate of the displays).")]
+        public TimeSync TimeSync;
 
         public TimeSpan HandshakeTimeout
         {
@@ -202,6 +230,19 @@ namespace Unity.ClusterDisplay
             ApplyArgument(ref clusterParams.HeadlessEmitter, CommandLineParser.headlessEmitter);
             ApplyArgument(ref clusterParams.AdapterName, CommandLineParser.adapterName);
             ApplyArgument(ref clusterParams.TargetFps, CommandLineParser.targetFps);
+
+            if (CommandLineParser.timeSync.Defined)
+            {
+                if (Enum.TryParse<TimeSync>(CommandLineParser.timeSync.Value, true, out var timeSync))
+                {
+                    clusterParams.TimeSync = timeSync;
+                }
+                else
+                {
+                    ClusterDebug.LogError($"Unknown value \"{CommandLineParser.timeSync.Value}\" for -timeSync, " +
+                        $"expected one of: {string.Join(", ", Enum.GetNames(typeof(TimeSync)))}.");
+                }
+            }
 
             if (CommandLineParser.handshakeTimeout.Defined)
             {

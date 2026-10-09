@@ -120,10 +120,20 @@ namespace Unity.ClusterDisplay
             m_StagedFrameDataValid = false;
         }
 
+        /// <summary>
+        /// Should the state of the time manager of the engine be sent to repeaters?  False when time is synchronized
+        /// by running every node with the same fixed time step (<see cref="TimeSync.FixedStep"/>).
+        /// </summary>
+        internal static bool SynchronizeEngineTime { get; set; } = true;
+
         static void StoreStateData(FrameDataBuffer frameDataBuffer)
         {
             foreach (var (id, dataDelegate) in s_StateDataDelegatesOverride ?? k_StateDataDelegates)
             {
+                if (id == (int)StateID.Time && s_StateDataDelegatesOverride == null && !SynchronizeEngineTime)
+                {
+                    continue;
+                }
                 frameDataBuffer.Store(id, dataDelegate);
             }
         }

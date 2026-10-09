@@ -220,6 +220,7 @@ namespace Unity.ClusterDisplay
                 IsClusterLogicEnabled = false;
                 return;
             }
+            EnableTimeSync(clusterParams);
 
 #if UNITY_STANDALONE_WIN
             if (NodeRole != NodeRole.Unassigned)
@@ -244,6 +245,50 @@ namespace Unity.ClusterDisplay
         }
 
         public void DisableClusterDisplay() => CleanUp();
+
+        /// <summary>
+        /// Fixed time step used by <see cref="TimeSync.FixedStep"/> when no <see cref="ClusterParams.TargetFps"/> is
+        /// specified.
+        /// </summary>
+        const int k_DefaultFixedStepFramerate = 60;
+
+        /// <summary>
+        /// Is <see cref="Time.captureFramerate"/> currently set by us (<see cref="TimeSync.FixedStep"/>)?
+        /// </summary>
+        bool m_FixedStepTimeActive;
+
+        void EnableTimeSync(ClusterParams clusterParams)
+        {
+            // In FixedStep mode the time of the engine is not sent over the network (see TimeSync.FixedStep).
+            EmitterStateWriter.SynchronizeEngineTime = clusterParams.TimeSync != TimeSync.FixedStep;
+
+            if (clusterParams.TimeSync == TimeSync.FixedStep)
+            {
+                var framerate = clusterParams.TargetFps;
+                if (framerate <= 0)
+                {
+                    framerate = k_DefaultFixedStepFramerate;
+                    ClusterDebug.LogWarning($"{nameof(TimeSync)}.{nameof(TimeSync.FixedStep)} needs a Target Fps (the " +
+                        $"refresh rate of the displays), using {framerate}.");
+                }
+
+                // Remark: Must be set before the first frame, every node then goes through exactly the same sequence
+                // of time values.
+                Time.captureFramerate = framerate;
+                m_FixedStepTimeActive = true;
+                InstanceLog($"Time is synchronized using a fixed time step of 1/{framerate} s.");
+            }
+        }
+
+        void DisableTimeSync()
+        {
+            EmitterStateWriter.SynchronizeEngineTime = true;
+            if (m_FixedStepTimeActive)
+            {
+                m_FixedStepTimeActive = false;
+                Time.captureFramerate = 0;
+            }
+        }
 
         bool TryInitializeEmitter(ClusterNodeConfig clusterNodeConfig, UdpAgentConfig udpConfig,
             ClusterParams clusterParams)
@@ -443,6 +488,7 @@ namespace Unity.ClusterDisplay
         public void CleanUp()
         {
             IsClusterLogicEnabled = false;
+            DisableTimeSync();
 
             LocalNode?.Dispose();
             LocalNode = null;

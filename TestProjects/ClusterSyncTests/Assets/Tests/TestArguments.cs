@@ -190,5 +190,20 @@ namespace Unity.ClusterDisplay.Tests
             Assert.That(clusterParams.NodeID, Is.EqualTo(6));
             Assert.That(clusterParams.ClusterLogicSpecified, Is.True);
         }
+
+        [Test]
+        public void TestTimeSyncArgument()
+        {
+            CommandLineParser.Override("-emitterNode 0 1 224.0.1.0:25691 -timeSync fixedStep -targetFps 60".Split(' ').ToList());
+
+            Assert.That(CommandLineParser.timeSync.Defined);
+            var clusterParams = ClusterParamExtensions.ApplyCommandLine(ClusterParams.Default);
+            Assert.That(clusterParams.TimeSync, Is.EqualTo(TimeSync.FixedStep));
+            Assert.That(clusterParams.TargetFps, Is.EqualTo(60));
+
+            // Not specified -> default (engine state)
+            CommandLineParser.Override("-emitterNode 0 1 224.0.1.0:25691".Split(' ').ToList());
+            Assert.That(ClusterParamExtensions.ApplyCommandLine(ClusterParams.Default).TimeSync, Is.EqualTo(TimeSync.EngineState));
+        }
     }
 }

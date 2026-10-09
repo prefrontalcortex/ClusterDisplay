@@ -48,6 +48,7 @@ namespace Unity.ClusterDisplay.Editor
 
             var inputSyncProperty = property.FindPropertyRelative("InputSync");
             container.Add(new PropertyField(inputSyncProperty, Contents.InputSync));
+            container.Add(new PropertyField(property.FindPropertyRelative("TimeSync")));
             var inputWarning = new HelpBox(Contents.InputWarning, HelpBoxMessageType.Warning);
             container.Add(inputWarning);
 
