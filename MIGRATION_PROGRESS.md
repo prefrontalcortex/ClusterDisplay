@@ -2,6 +2,36 @@
 
 Stand der Erstanalyse: 2026-10-08 (Branch `dotnet-update`). Gemeinsames Gedächtnis zwischen Sessions – nach jedem Task Status, Messwerte und Commit eintragen.
 
+## Stand 2026-10-09 (Zusammenfassung für den Wiedereinstieg)
+
+**Gemessen mit Editor 6000.3.13f1 (Mono, Windows 11, RTX 5070 Ti):** alle 9 Projekte kompilieren mit 0 Fehlern; Obsolete nur noch `ClusterSerialization` ×2 (Zeit-Sync, siehe M-42). Tests:
+
+| Suite | Ergebnis |
+|---|---|
+| ClusterSyncTests PlayMode | 209/212 grün (3 übersprungen: Quadro-DLL, 2× Windows-Input) |
+| RPCTests PlayMode | 14/14 |
+| MissionControlTests EditMode | 274/274 |
+| GraphicsTestsHDRP PlayMode (GPU) | 50/50 |
+| GraphicsTestsURP PlayMode (GPU) | 44/44 – **ohne** URP Compatibility Mode (vorher 10/43) |
+| GraphicsTestsURP/HDRP EditMode | je 17/17 |
+| .NET `MissionControl.sln -m:1` | 595 bestanden, 0 Fehler |
+| Player-Build + Zwei-Node-Smoke (Emitter+Repeater, Multicast) | läuft stabil; Zeit-Sync-Vergleich 43 Stichproben |
+
+**Gelöst:** MissionControl lehnte Builds ab, weil git die eingecheckten Builds verändert hat (CRLF) – frischer Build wird akzeptiert (M-03/M-04). URP-Present auf Render Graph (M-31..33). Protokoll mit Magic+Version, MTU-Fix (M-43). Optionaler Zeit-Sync ohne `ClusterSerialization` (M-42). Mehrere echte Produktfehler gefunden und behoben (Locale-abhängige Zahlen, tote Shader-Strip-Prüfung, Play-Mode-Reset, NRE ohne Mission Control, nicht antwortende LaunchPads, …).
+
+**Entscheidungen / Aufgaben für dich (Montag):**
+1. **Push**: `dotnet-update` ist lokal weit vor `github.com/dotnet-update` (nichts gepusht seit dem ersten Push).
+2. **Manuell**: im Web-UI einen Build registrieren und auf einem LaunchPad starten (Rest von M-04); Zwei-/Mehr-Rechner-Test im echten Netz; Sichtprüfung der Kachelausgabe auf echten Displays.
+3. **Zeit-Sync-Default** (M-42): `FixedStep` ist optional (`-timeSync fixedStep`); vor einer Umstellung prüfen: `Time.unscaledTime` ist nicht synchron, Zeitlupe bei langsamen Frames, `-targetFps` = Display-Refresh, >2 Nodes + Failover testen.
+4. **Hardware** (Quadro/RTX PRO Sync): M-61 (Plugin-Neubau, Header sind aktualisiert, kompiliert), M-63/M-64 (Tests), M-65 (Doku).
+5. **CI** (M-05): Unity-Workflow braucht Lizenz-Secrets + Variable `UNITY_CI=true`.
+6. **Release**: Version 0.2.0 (M-70), 6.7 LTS/CoreCLR (M-72, inkl. M-22/M-62), RPC-Strategie (M-52).
+7. Ziel-Patchlevel 6000.3.26f1 (installiert ist 13f1).
+
+**Bekannte offene Beobachtungen:** Unity-Shutdown-Segfault in ~1 von 3 ClusterSyncTests-Läufen (Ergebnisse vollständig; `run_tests.sh` meldet nur Warnung); schwankende Testanzahl in ClusterSyncTests (218 → 206 ohne Codeänderung, pro Klasse konsistent).
+
+**Skripte** (`.claude/skills/unity-compile-check/scripts/`): `check_compile.sh`, `run_tests.sh`, `gfx_tests.sh` (mit GPU), `build_player.sh` (mit Watchdog), `two_node_smoke.sh`. Alle mit Timeout – Unity nie ohne Zeitlimit starten.
+
 ## Ausgangslage
 - Unity: alt 2023.1 (Package-Minimum) / Testprojekte 2020.1 … 6000.2.8f1 → Ziel **6000.3.26f1 LTS** → danach Folgemeilenstein **6.7 LTS** (derzeit nicht installiert). 6.0 LTS endet 2026-10-16.
 - Compile-Baseline (2026-10-08, Editor **6000.3.13f1**, voller Compile): `pfcClusterBasicTestURP` (URP) **0 Fehler / 9 Obsolete / 10 Warnungen**; `GraphicsDemoProject` (HDRP) **0 Fehler / 15 Obsolete / 15 Warnungen** (davon 6 in Package-Tests, 1 im Demo-Projekt). Ziel-Patchlevel 6000.3.26f1 nicht installiert.
@@ -176,4 +206,4 @@ Status: `[ ]` offen · `[~]` in Arbeit · `[x]` erledigt · `[-]` aufgeteilt · 
 | 2026-10-09 | M-37 | **Neuer Test `TiledProjectionPointLightsTest` (15 farbige Punktlichter über alle Kacheln, Kachel- vs. Vanilla-Vergleich): bestanden mit Forward (`m_RenderingMode: 0`) UND Forward+ (`2`)**, URP 17.3 / 6000.3.13f1, echte GPU | siehe Commit "M-37" | Bisherige Testszenen hatten nur ein Richtungslicht (Typ 1) → Punktlicht-/Forward+-Clustering war ungetestet. Befund: **`pfcClusterBasicTestURP` nutzt Forward+ (`PC_Renderer.asset` `m_RenderingMode: 2`)** und das ist nach diesem Test unproblematisch. Grenze: nur Kachel-/Off-Axis-Projektion mit symmetrisch aufgeteilten Tiles getestet; Aussage nicht für beliebige Custom-Projektionsmatrizen (z. B. Mesh-Warp/Tracked Perspective mit Lights nicht geprüft) |
 | 2026-10-09 | M-70, M-65 (teilweise) | – (Doku) | siehe Commit "docs" | Aktualisiert: `README.md` (Unity 6.3 LTS, Windows 11 getestet), `installation.md` (Unity 6.3, Windows 11, RTX PRO Sync als Nachfolger Quadro Sync II), `mission-control.md` (.NET 8 statt „.Net Core 6.0“), `quadro-sync.md` (Hardware/Version, Hinweis „nach der Migration nicht mit Sync-Hardware verifiziert“), Graphics `index.md` (URP/HDRP 17.3), `synchronization.md` (neue Abschnitte **Time synchronization** [Modi, Einschränkungen von FixedStep] und **Network protocol version**), `CHANGELOG.md` ×2 (Unreleased-Abschnitt Unity-6.3-Migration). **Bewusst offen:** Versionsnummer 0.2.0 (Release-Entscheidung), Doku zu CLI-Parametern insgesamt (existiert kaum), `quadro-sync.md`-Inhalt (Treiber/Firmware-Einzelheiten) erst nach Hardwaretest |
 | 2026-10-09 | M-05b (abgeschlossen) | **`dotnet test MissionControl.sln -m:1`: HangarBay 67/67, LaunchPad 57/57, Shared 108/108, MissionControl.Tests 363 bestanden + 1 übersprungen (`RealUnityBuild`, braucht Env `CLUSTERDISPLAY_TEST_ASSET`) = 0 Fehler** | siehe Commit "M-05b UpdateError" | Letzter Rotläufer `LaunchPadsHealthControllerTests.UpdateError` war **ein echter Produktmangel**: `LaunchPadsHealthService` ließ am Ende des Intervalls nicht beantwortete Health-Abfragen still fallen („expect some health information to be outdated“) → ein hängender/toter LaunchPad blieb mit seinen letzten **gesunden** Werten sichtbar (auf Windows hängt die Anfrage an einen gestoppten `HttpListener`-Stub statt sofort zu scheitern). Jetzt wird ein nicht antwortender LaunchPad als Fehler gemeldet („No answer from the LaunchPad before the end of the health monitoring interval“); Test-Timeout auf 15 s (Intervall 5 s + Verbindungsaufbau). Hinweis: ein sehr langsamer, aber lebender LaunchPad kann kurz als Fehler erscheinen und erholt sich beim nächsten Update |
-| 2026-10-09 | Shutdown-Segfault (Analyse) | Windows-Ereignisprotokoll: 3 Abstürze `Unity.exe` 6000.3.13, Ausnahme **0xc0000005 (Access Violation)**, Modul „unknown“ (= JIT-/dynamischer Code), **gleiche Offset-Endung `…0ad8`** in allen drei → immer dieselbe Stelle in managed Code, der nach dem Entladen der Domain weiterläuft (Hintergrund-Thread / Callback), typisch beim Beenden | – | Verdacht: Test-Instanzen mit laufendem `UdpAgent`-Empfangs-Thread (oder `s_LogThread`) ohne `Dispose` beim Domain-Unload; nicht bestätigt. **Mildderung:** `run_tests.sh` behandelt Exit 139 nur dann als Warnung (Exit 0), wenn `total > 0` und keine Tests fehlgeschlagen sind (Ergebnisse stehen im XML). Für CI: Ergebnis-XML auswerten, nicht den Exitcode. Echte Behebung offen (z. B. Threads in `[OneTimeTearDown]` sicher beenden, Receive-Thread als Background-Thread markieren) |
+| 2026-10-09 | Shutdown-Segfault (Analyse) | Windows-Ereignisprotokoll: 3 Abstürze `Unity.exe` 6000.3.13, Ausnahme **0xc0000005 (Access Violation)**, Modul „unknown“ (= JIT-/dynamischer Code), **gleiche Offset-Endung `…0ad8`** in allen drei → immer dieselbe Stelle in managed Code, der nach dem Entladen der Domain weiterläuft (Hintergrund-Thread / Callback), typisch beim Beenden | – | Verdacht: Test-Instanzen mit laufendem `UdpAgent`-Empfangs-Thread (oder `s_LogThread`) ohne `Dispose` beim Domain-Unload; nicht bestätigt. **Milderung:** `run_tests.sh` behandelt Exit 139 nur dann als Warnung (Exit 0), wenn `total > 0` und keine Tests fehlgeschlagen sind (Ergebnisse stehen im XML). Für CI: Ergebnis-XML auswerten, nicht den Exitcode. Echte Behebung offen (z. B. Threads in `[OneTimeTearDown]` sicher beenden, Receive-Thread als Background-Thread markieren) |
