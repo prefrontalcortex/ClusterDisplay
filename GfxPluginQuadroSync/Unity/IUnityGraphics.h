@@ -14,7 +14,7 @@ typedef enum UnityGfxRenderer
     //kUnityGfxRendererD3D9              =  1, // Direct3D 9, removed
     kUnityGfxRendererD3D11             =  2, // Direct3D 11
     kUnityGfxRendererNull              =  4, // "null" device (used in batch mode)
-    kUnityGfxRendererOpenGLES20        =  8, // OpenGL ES 2.0
+    //kUnityGfxRendererOpenGLES20        =  8, // OpenGL ES 2.0, removed
     kUnityGfxRendererOpenGLES30        = 11, // OpenGL ES 3.0
     //kUnityGfxRendererGXM               = 12, // PlayStation Vita, removed
     kUnityGfxRendererPS4               = 13, // PlayStation 4
@@ -24,7 +24,13 @@ typedef enum UnityGfxRenderer
     kUnityGfxRendererD3D12             = 18, // Direct3D 12
     kUnityGfxRendererVulkan            = 21, // Vulkan
     kUnityGfxRendererNvn               = 22, // Nintendo Switch NVN API
-    kUnityGfxRendererXboxOneD3D12      = 23  // MS XboxOne Direct3D 12
+    kUnityGfxRendererXboxOneD3D12      = 23,  // MS XboxOne Direct3D 12
+    kUnityGfxRendererGameCoreXboxOne   = 24, // GameCore Xbox One
+    kUnityGfxRendererGameCoreXboxSeries  = 25, // GameCore XboxSeries
+    kUnityGfxRendererPS5               = 26, // PS5
+    kUnityGfxRendererPS5NGGC           = 27, // PS5 NGGC
+
+    kUnityGfxRendererNvn2              = 29  // Switch2
 } UnityGfxRenderer;
 
 typedef enum UnityGfxDeviceEventType
