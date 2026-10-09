@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Unity.ClusterDisplay.Utils;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 using UnityEngine.PlayerLoop;
 

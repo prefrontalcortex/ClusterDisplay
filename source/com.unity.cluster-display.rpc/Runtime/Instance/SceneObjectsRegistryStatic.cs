@@ -1,6 +1,8 @@
 using System.Linq;
 using System.Collections.Generic;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -199,7 +201,9 @@ namespace Unity.ClusterDisplay.RPC
         /// search the scene for instances of registered RPC declaring types and registers those instances with a
         /// scene instance of SceneObjectsRegistry. If a SceneObjectsRegistry does not exist, it will automatically be created.
         /// </summary>
+#if UNITY_EDITOR
         [UnityEditor.Callbacks.DidReloadScripts]
+#endif
         static void PollUnregisteredInstanceRPCs()
         {
             if (Application.isPlaying)
