@@ -1,5 +1,4 @@
 ﻿#if CLUSTER_DISPLAY_URP
-using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -16,10 +15,8 @@ namespace Unity.ClusterDisplay.Graphics.Editor
             var urpAsset = GraphicsSettings.currentRenderPipeline as UniversalRenderPipelineAsset;
             Assert.IsNotNull(urpAsset, $"Expected GraphicsSettings.currentRenderPipeline to be an instance of {nameof(UniversalRenderPipelineAsset)}");
 
-            var rendererDataField = typeof(UniversalRenderPipelineAsset).GetField("m_RendererDataList", BindingFlags.NonPublic | BindingFlags.Instance);
-            var renderData = rendererDataField.GetValue(urpAsset) as ScriptableRendererData[];
-            Assert.IsNotNull(renderData, $"{nameof(UniversalRenderPipelineAsset)} collection of {nameof(ScriptableRendererData)} is empty.");
-            Assert.IsTrue(renderData.Length >= 0);
+            var renderData = urpAsset.rendererDataList;
+            Assert.IsTrue(renderData.Length > 0, $"{nameof(UniversalRenderPipelineAsset)} collection of {nameof(ScriptableRendererData)} is empty.");
 
             var renderDataSerializedObject = new SerializedObject(renderData[0]);
             var rendererFeaturesProp = renderDataSerializedObject.FindProperty("m_RendererFeatures");

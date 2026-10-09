@@ -1,11 +1,12 @@
 ﻿#if CLUSTER_DISPLAY_URP
 using System;
 using System.Collections.Generic;
-using System.Reflection;
+
 using UnityEditor.Build;
 using UnityEditor.Rendering;
 using UnityEngine;
-using UnityEngine.Assertions;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace Unity.ClusterDisplay.Graphics.Editor
 {
@@ -26,28 +27,13 @@ namespace Unity.ClusterDisplay.Graphics.Editor
 
         static bool TryGetGlobalSettingsStripScreenCoordOverrideVariants(out bool value)
         {
-            try
+            if (GraphicsSettings.TryGetRenderPipelineSettings<URPShaderStrippingSetting>(out var strippingSettings))
             {
-                var type = Type.GetType("UnityEngine.Rendering.Universal.UniversalRenderPipelineGlobalSettings, Unity.RenderPipelines.Universal.Runtime");
-                Assert.IsNotNull(type);
-
-                var instanceProp = type.GetProperty("instance", BindingFlags.Public | BindingFlags.Static);
-                Assert.IsNotNull(instanceProp);
-
-                var instance = instanceProp.GetValue(null);
-                Assert.IsNotNull(instance);
-
-                var settingProp = type.GetProperty("stripScreenCoordOverrideVariants", BindingFlags.Public | BindingFlags.Instance);
-                Assert.IsNotNull(settingProp);
-
-                value = (bool)settingProp.GetValue(instance);
+                value = strippingSettings.stripScreenCoordOverrideVariants;
                 return true;
             }
-            catch
-            {
-                Debug.LogError("Could not read Universal Render Pipeline Global Settings.");
-            }
 
+            Debug.LogError("Could not read Universal Render Pipeline Global Settings.");
             value = true;
             return false;
         }
