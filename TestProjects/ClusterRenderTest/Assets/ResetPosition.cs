@@ -23,7 +23,7 @@ namespace DefaultNamespace
                 collideed = false;
                 transform.position = position;
                 var rigid = transform.gameObject.GetComponent<Rigidbody>();
-                rigid.velocity = new Vector3();
+                rigid.linearVelocity = Vector3.zero;
                 rigid.angularVelocity = Vector3.ClampMagnitude(rigid.angularVelocity, 1);
                 frameCount = 0;
             }

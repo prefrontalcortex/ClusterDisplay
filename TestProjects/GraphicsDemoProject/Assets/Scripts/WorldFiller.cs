@@ -58,7 +58,7 @@ namespace Unity.ClusterRendering.Toolkit
                 return;
             }
 
-            Random.seed = m_Seed;
+            Random.InitState(m_Seed);
             for (var i = 0; i != numInstances; ++i)
             {
                 var prefabIndex = i % prefabs.Length;
