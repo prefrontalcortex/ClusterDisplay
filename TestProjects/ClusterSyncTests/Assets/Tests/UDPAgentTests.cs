@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Threading;
 using NUnit.Framework;
 using Unity.Collections;
@@ -15,6 +17,20 @@ namespace Unity.ClusterDisplay.Tests
         {
             using var agent = new UdpAgent(GetConfig(new [] {MessageType.RegisteringWithEmitter}));
             Thread.Sleep(100); // A small wait to give the time to threads inside UdpAgent to correctly start
+        }
+
+        [Test]
+        public void MaximumMessageSizeFitsInMtu()
+        {
+            using var agent = new UdpAgent(GetConfig(null));
+            var nic = NetworkInterface.GetAllNetworkInterfaces().First(n =>
+                n.GetIPProperties().UnicastAddresses.Any(a => a.Address.Equals(agent.AdapterAddress)));
+            var mtu = nic.GetIPProperties().GetIPv4Properties().Mtu;
+
+            // Message type (1 byte) + payload (MaximumMessageSize) + IPv4 header (20) + UDP header (8) must fit in the
+            // MTU, otherwise every full datagram gets fragmented by the IP layer.
+            Assert.That(agent.MaximumMessageSize + 1 + 28, Is.LessThanOrEqualTo(mtu));
+            Assert.That(agent.MaximumMessageSize, Is.GreaterThan(1000));
         }
 
         [Test]

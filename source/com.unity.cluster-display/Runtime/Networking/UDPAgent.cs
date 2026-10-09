@@ -86,7 +86,9 @@ namespace Unity.ClusterDisplay
                 // assume a default MTU size if anything goes wrong.
                 m_Mtu = 1400;
             }
-            MaximumMessageSize = m_Mtu - 1 /*for the Message type*/;
+            // The MTU includes the IP and UDP headers: a datagram bigger than that would be fragmented by the IP layer
+            // (more load, a lost fragment loses the whole datagram).
+            MaximumMessageSize = m_Mtu - k_IpUdpHeadersSize - 1 /*for the Message type*/;
 
             // Create the UdpClient
             m_UdpClient = new();
@@ -138,6 +140,12 @@ namespace Unity.ClusterDisplay
             m_ReceiveThread?.Join();
         }
 
+        /// <summary>
+        /// Size of the headers added by the IP layer (IPv4 without options, 20 bytes) and the UDP layer (8 bytes) to
+        /// every datagram.
+        /// </summary>
+        const int k_IpUdpHeadersSize = 28;
+
         public IPAddress AdapterAddress { get; private set; }
 
         public int MaximumMessageSize { get; private set; }
@@ -152,7 +160,7 @@ namespace Unity.ClusterDisplay
             // Remarks, Assert below check for profiler otherwise GetTypeOf generate tons of GC Alloc that makes
             // profiling unnecessarily alarming.
             Assert.IsTrue(Profiler.enabled || MessageTypeAttribute.GetTypeOf<TM>() == messageType);
-            if (Marshal.SizeOf(typeof(TM)) + sizeof(MessageType) + additionalData.Length > m_Mtu)
+            if (Marshal.SizeOf(typeof(TM)) + sizeof(MessageType) + additionalData.Length > m_Mtu - k_IpUdpHeadersSize)
             {
                 throw new ArgumentException("Marshal.SizeOf(typeof(TM)) + additionalData.Length > MaximumMessageSize.");
             }
