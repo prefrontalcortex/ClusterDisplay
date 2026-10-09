@@ -1,262 +1,131 @@
-﻿using System.Runtime.InteropServices;
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using NUnit.Framework;
 
 namespace Unity.ClusterDisplay.Tests
 {
+    /// <summary>
+    /// Tests that apply to every network message (struct with a <see cref="MessageTypeAttribute"/>), so that a message
+    /// added or changed later is covered automatically.
+    /// </summary>
     public class NetworkMessagesTests
     {
-        [Test]
-        public void RegisteringWithEmitter()
-        {
-            int sizeOfStruct = Marshal.SizeOf<RegisteringWithEmitter>();
-            Assert.That(sizeOfStruct, Is.EqualTo(5));
+        static (Type type, MessageTypeAttribute attribute)[] AllMessages => MessageTypeAttribute.AllTypes;
 
-            var testStruct = new RegisteringWithEmitter
+        [Test]
+        public void EveryMessageTypeHasExactlyOneStruct()
+        {
+            var messageTypes = Enum.GetValues(typeof(MessageType)).Cast<MessageType>().Where(t => t != MessageType.None);
+            foreach (var messageType in messageTypes)
             {
-                NodeId = 42,
-                IPAddressBytes = 0x12345678
-            };
-            var byteArray = ToByteArray(testStruct, sizeOfStruct);
-            var roundTrip = FromByteArray<RegisteringWithEmitter>(byteArray);
-
-            Assert.That(roundTrip.NodeId, Is.EqualTo(testStruct.NodeId));
-            Assert.That(roundTrip.IPAddressBytes, Is.EqualTo(testStruct.IPAddressBytes));
+                var structs = AllMessages.Where(m => m.attribute.Type == messageType).Select(m => m.type.Name).ToArray();
+                Assert.That(structs.Length, Is.EqualTo(1), $"{messageType} is used by: [{string.Join(", ", structs)}]");
+            }
         }
 
         [Test]
-        public void RepeaterRegistered()
+        public void MessageTypeValuesAreStable()
         {
-            int sizeOfStruct = Marshal.SizeOf<RepeaterRegistered>();
-            Assert.That(sizeOfStruct, Is.EqualTo(6));
-
-            var testStruct = new RepeaterRegistered
+            // The numeric values are part of the wire format (a byte in the datagram header): never reorder or
+            // renumber, only append (and increment UdpAgent.ProtocolVersion).
+            var expected = new[]
             {
-                NodeId = 42,
-                IPAddressBytes = 0x12345678,
-                Accepted = true
+                "None", "RegisteringWithEmitter", "RepeaterRegistered", "FrameData", "RetransmitFrameData",
+                "RepeaterWaitingToStartFrame", "EmitterWaitingToStartFrame", "PropagateQuit", "QuitReceived",
+                "QuadroBarrierWarmupHeartbeat", "QuadroBarrierWarmupStatus", "SurveyRepeaters",
+                "RepeatersSurveyAnswer", "RetransmitReceivedFrameData", "RetransmittedReceivedFrameData"
             };
-            var byteArray = ToByteArray(testStruct, sizeOfStruct);
-            var roundTrip = FromByteArray<RepeaterRegistered>(byteArray);
-
-            Assert.That(roundTrip.NodeId, Is.EqualTo(testStruct.NodeId));
-            Assert.That(roundTrip.IPAddressBytes, Is.EqualTo(testStruct.IPAddressBytes));
-            Assert.That(roundTrip.Accepted, Is.EqualTo(testStruct.Accepted));
-        }
-
-        [Test]
-        public void FrameData()
-        {
-            int sizeOfStruct = Marshal.SizeOf<FrameData>();
-            Assert.That(sizeOfStruct, Is.EqualTo(20));
-
-            var testStruct = new FrameData
+            var actual = Enum.GetValues(typeof(MessageType)).Cast<MessageType>().OrderBy(t => (byte)t)
+                .Select(t => t.ToString()).ToArray();
+            Assert.That(actual, Is.EqualTo(expected));
+            for (int i = 0; i < expected.Length; ++i)
             {
-                FrameIndex = 0x1234567887654321,
-                DataLength = 0x76544367,
-                DatagramIndex = 0x65433456,
-                DatagramDataOffset = 0x54322345
-            };
-            var byteArray = ToByteArray(testStruct, sizeOfStruct);
-            var roundTrip = FromByteArray<FrameData>(byteArray);
-
-            Assert.That(roundTrip.FrameIndex, Is.EqualTo(testStruct.FrameIndex));
-            Assert.That(roundTrip.DataLength, Is.EqualTo(testStruct.DataLength));
-            Assert.That(roundTrip.DatagramIndex, Is.EqualTo(testStruct.DatagramIndex));
-            Assert.That(roundTrip.DatagramDataOffset, Is.EqualTo(testStruct.DatagramDataOffset));
+                Assert.That((byte)Enum.Parse(typeof(MessageType), expected[i]), Is.EqualTo(i));
+            }
         }
 
         [Test]
-        public void RetransmitFrameData()
+        public void EveryMessageHasPackedSequentialLayout()
         {
-            int sizeOfStruct = Marshal.SizeOf<RetransmitFrameData>();
-            Assert.That(sizeOfStruct, Is.EqualTo(16));
-
-            var testStruct = new RetransmitFrameData
+            foreach (var (type, _) in AllMessages)
             {
-                FrameIndex = 0x2345678998765432,
-                DatagramIndexIndexStart = 0x65433456,
-                DatagramIndexIndexEnd = 0x76544367
-            };
-            var byteArray = ToByteArray(testStruct, sizeOfStruct);
-            var roundTrip = FromByteArray<RetransmitFrameData>(byteArray);
-
-            Assert.That(roundTrip.FrameIndex, Is.EqualTo(testStruct.FrameIndex));
-            Assert.That(roundTrip.DatagramIndexIndexStart, Is.EqualTo(testStruct.DatagramIndexIndexStart));
-            Assert.That(roundTrip.DatagramIndexIndexEnd, Is.EqualTo(testStruct.DatagramIndexIndexEnd));
+                Assert.That(type.IsValueType, Is.True, type.Name);
+                var layout = type.StructLayoutAttribute;
+                Assert.That(layout, Is.Not.Null, type.Name);
+                Assert.That(layout.Value, Is.EqualTo(LayoutKind.Sequential), type.Name);
+                Assert.That(layout.Pack, Is.EqualTo(1), $"{type.Name} must use Pack = 1");
+            }
         }
 
         [Test]
-        public void RepeaterWaitingToStartFrame()
+        public void EveryMessageFitsInADatagram()
         {
-            int sizeOfStruct = Marshal.SizeOf<RepeaterWaitingToStartFrame>();
-            Assert.That(sizeOfStruct, Is.EqualTo(10));
-
-            var testStruct = new RepeaterWaitingToStartFrame
+            // Smallest MTU we want to support is 1280 (minimum for IPv6), minus IP/UDP headers (28) and our header (3).
+            const int k_Budget = 1280 - 28 - 3;
+            foreach (var (type, _) in AllMessages)
             {
-                FrameIndex = 0x3456789009876543,
-                NodeId = 251,
-                WillUseNetworkSyncOnNextFrame = true
-            };
-            var byteArray = ToByteArray(testStruct, sizeOfStruct);
-            var roundTrip = FromByteArray<RepeaterWaitingToStartFrame>(byteArray);
-
-            Assert.That(roundTrip.FrameIndex, Is.EqualTo(testStruct.FrameIndex));
-            Assert.That(roundTrip.NodeId, Is.EqualTo(testStruct.NodeId));
-            Assert.That(roundTrip.WillUseNetworkSyncOnNextFrame, Is.EqualTo(testStruct.WillUseNetworkSyncOnNextFrame));
+                Assert.That(Marshal.SizeOf(type), Is.LessThan(k_Budget / 2), $"{type.Name} leaves too little room for data");
+            }
         }
 
         [Test]
-        public void EmitterWaitingToStartFrame()
+        public void EveryMessageRoundtrips()
         {
-            int sizeOfStruct = Marshal.SizeOf<EmitterWaitingToStartFrame>();
-            Assert.That(sizeOfStruct, Is.EqualTo(5 * 8));
-
-            var testStruct = new EmitterWaitingToStartFrame
+            var method = typeof(NetworkMessagesTests).GetMethod(nameof(Roundtrip), BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.That(method, Is.Not.Null);
+            foreach (var (type, _) in AllMessages)
             {
-                FrameIndex = 0x4567890110987654,
-            };
-            testStruct.WaitingOn0 = 0x5678901221098765;
-            testStruct.WaitingOn1 = 0x6789012332109876;
-            testStruct.WaitingOn2 = 0x7890123443210987;
-            testStruct.WaitingOn3 = 0x8901234554321098;
-
-            var byteArray = ToByteArray(testStruct, sizeOfStruct);
-            var roundTrip = FromByteArray<EmitterWaitingToStartFrame>(byteArray);
-
-            Assert.That(roundTrip.FrameIndex, Is.EqualTo(testStruct.FrameIndex));
-            Assert.That(roundTrip.WaitingOn0, Is.EqualTo(testStruct.WaitingOn0));
-            Assert.That(roundTrip.WaitingOn1, Is.EqualTo(testStruct.WaitingOn1));
-            Assert.That(roundTrip.WaitingOn2, Is.EqualTo(testStruct.WaitingOn2));
-            Assert.That(roundTrip.WaitingOn3, Is.EqualTo(testStruct.WaitingOn3));
+                method.MakeGenericMethod(type).Invoke(null, null);
+            }
         }
 
-        [Test]
-        public void PropagateQuit()
+        static void Roundtrip<T>() where T : unmanaged
         {
-            int sizeOfStruct = Marshal.SizeOf<PropagateQuit>();
-            Assert.That(sizeOfStruct, Is.EqualTo(1)); // It is empty but it looks like size is a minimum of 1
+            var size = Marshal.SizeOf<T>();
+            var random = new System.Random(42 + size);
 
-            var testStruct = new PropagateQuit();
-
-            var byteArray = ToByteArray(testStruct, sizeOfStruct);
-            var roundTrip = FromByteArray<PropagateQuit>(byteArray);
-
-            Assert.That(roundTrip, Is.Not.Null);
-            Assert.That(roundTrip, Is.TypeOf<PropagateQuit>());
-        }
-
-        [Test]
-        public void QuitReceived()
-        {
-            int sizeOfStruct = Marshal.SizeOf<QuitReceived>();
-            Assert.That(sizeOfStruct, Is.EqualTo(1));
-
-            var testStruct = new QuitReceived();
-            testStruct.NodeId = 42;
-
-            var byteArray = ToByteArray(testStruct, sizeOfStruct);
-            var roundTrip = FromByteArray<QuitReceived>(byteArray);
-
-            Assert.That(roundTrip.NodeId, Is.EqualTo(testStruct.NodeId));
-        }
-
-        [Test]
-        public void SurveyRepeaters()
-        {
-            int sizeOfStruct = Marshal.SizeOf<SurveyRepeaters>();
-            Assert.That(sizeOfStruct, Is.EqualTo(1));
-
-            SurveyRepeaters testStruct = new();
-
-            var byteArray = ToByteArray(testStruct, sizeOfStruct);
-            var roundTrip = FromByteArray<SurveyRepeaters>(byteArray);
-
-            Assert.That(roundTrip, Is.Not.Null);
-            Assert.That(roundTrip, Is.TypeOf<SurveyRepeaters>());
-        }
-
-        [Test]
-        public void RepeatersSurveyAnswer()
-        {
-            int sizeOfStruct = Marshal.SizeOf<RepeatersSurveyAnswer>();
-            Assert.That(sizeOfStruct, Is.EqualTo(14));
-
-            RepeatersSurveyAnswer testStruct = new()
+            // Several patterns: all zeros, all ones and random bytes (covers extreme values of every field).
+            var patterns = new byte[4][];
+            for (int i = 0; i < patterns.Length; ++i)
             {
-                NodeId = 0x42,
-                IPAddressBytes = 0x12345678,
-                LastReceivedFrameIndex = 0x4567890110987654,
-                StillUseNetworkSync = true
-            };
-
-            var byteArray = ToByteArray(testStruct, sizeOfStruct);
-            var roundTrip = FromByteArray<RepeatersSurveyAnswer>(byteArray);
-
-            Assert.That(roundTrip, Is.Not.Null);
-            Assert.That(roundTrip, Is.TypeOf<RepeatersSurveyAnswer>());
-            Assert.That(roundTrip.NodeId, Is.EqualTo(testStruct.NodeId));
-            Assert.That(roundTrip.IPAddressBytes, Is.EqualTo(testStruct.IPAddressBytes));
-            Assert.That(roundTrip.LastReceivedFrameIndex, Is.EqualTo(testStruct.LastReceivedFrameIndex));
-            Assert.That(roundTrip.StillUseNetworkSync, Is.True);
-        }
-
-        [Test]
-        public void RetransmitReceivedFrameData()
-        {
-            int sizeOfStruct = Marshal.SizeOf<RetransmitReceivedFrameData>();
-            Assert.That(sizeOfStruct, Is.EqualTo(9));
-
-            RetransmitReceivedFrameData testStruct = new()
+                patterns[i] = new byte[size];
+            }
+            for (int i = 0; i < size; ++i)
             {
-                NodeId = 0x42,
-                FrameIndex = 0x4567890110987654
-            };
+                patterns[1][i] = 0xFF;
+            }
+            random.NextBytes(patterns[2]);
+            random.NextBytes(patterns[3]);
 
-            var byteArray = ToByteArray(testStruct, sizeOfStruct);
-            var roundTrip = FromByteArray<RetransmitReceivedFrameData>(byteArray);
+            // Messages without any field (e.g. SurveyRepeaters) are only a signal, there is no data to compare.
+            var hasData = typeof(T).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Length > 0;
 
-            Assert.That(roundTrip, Is.Not.Null);
-            Assert.That(roundTrip, Is.TypeOf<RetransmitReceivedFrameData>());
-            Assert.That(roundTrip.NodeId, Is.EqualTo(testStruct.NodeId));
-            Assert.That(roundTrip.FrameIndex, Is.EqualTo(testStruct.FrameIndex));
-        }
-
-        [Test]
-        public void RetransmittedFrameData()
-        {
-            int sizeOfStruct = Marshal.SizeOf<RetransmittedReceivedFrameData>();
-            Assert.That(sizeOfStruct, Is.EqualTo(20));
-
-            RetransmittedReceivedFrameData testStruct = new()
+            foreach (var pattern in patterns)
             {
-                FrameIndex = 0x1234567887654321,
-                DataLength = 0x76544367,
-                DatagramIndex = 0x65433456,
-                DatagramDataOffset = 0x54322345
-            };
+                T original = MemoryMarshal.Read<T>(pattern);
 
-            var byteArray = ToByteArray(testStruct, sizeOfStruct);
-            var roundTrip = FromByteArray<RetransmittedReceivedFrameData>(byteArray);
+                // Store at an offset (as done with the datagram header) in a bigger buffer, and read back.
+                var buffer = new byte[size + 16];
+                var written = original.StoreInBuffer(buffer.AsSpan(), 3);
+                Assert.That(written, Is.EqualTo(size), typeof(T).Name);
 
-            Assert.That(roundTrip, Is.Not.Null);
-            Assert.That(roundTrip, Is.TypeOf<RetransmittedReceivedFrameData>());
-            Assert.That(roundTrip.FrameIndex, Is.EqualTo(testStruct.FrameIndex));
-            Assert.That(roundTrip.DataLength, Is.EqualTo(testStruct.DataLength));
-            Assert.That(roundTrip.DatagramIndex, Is.EqualTo(testStruct.DatagramIndex));
-            Assert.That(roundTrip.DatagramDataOffset, Is.EqualTo(testStruct.DatagramDataOffset));
-        }
+                T loaded = ((ReadOnlySpan<byte>)buffer).LoadStruct<T>(3);
+                var loadedBytes = new byte[size];
+                MemoryMarshal.Write(loadedBytes, ref loaded);
+                if (hasData)
+                {
+                    Assert.That(loadedBytes, Is.EqualTo(pattern), $"{typeof(T).Name} did not survive a roundtrip");
+                }
+            }
 
-        static byte[] ToByteArray<T>(T toSerialize, int expectedSize) where T: unmanaged
-        {
-            var ret = new byte[expectedSize];
-            var storedSize = toSerialize.StoreInBuffer(ret);
-            Assert.That(storedSize, Is.EqualTo(expectedSize));
-            return ret;
-        }
-
-        static T FromByteArray<T>(byte[] byteArray) where T : unmanaged
-        {
-            return byteArray.LoadStruct<T>();
+            // The buffer is too small
+            if (hasData) Assert.Throws<ArgumentOutOfRangeException>(() =>
+            {
+                T value = default;
+                value.StoreInBuffer(new byte[size - 1].AsSpan(), 0);
+            }, typeof(T).Name);
         }
     }
 }
