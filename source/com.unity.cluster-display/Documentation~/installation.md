@@ -17,8 +17,8 @@ To install it, you have two main options:
 
 |Item |Description |
 |---|---|
-| **Unity Editor**   | **Unity Editor 2023.1** or later |
-| **Platform**       | Windows 10 |
+| **Unity Editor**   | **Unity 6.3 LTS (6000.3)** or later |
+| **Platform**       | Windows 11 (tested), Windows 10 |
 
 ## Hardware recommendations
 
@@ -28,4 +28,4 @@ To install it, you have two main options:
 
 * If you are using Quadro Sync the following hardware is required:
     * Requires one or more [NVIDIA Quadro GPU](https://www.nvidia.com/en-us/design-visualization/quadro/)s.
-    * Requires one or more [NVIDIA Quadro Sync II](https://www.nvidia.com/en-us/design-visualization/solutions/quadro-sync/) boards.
+    * Requires one or more [NVIDIA Quadro Sync II](https://www.nvidia.com/en-us/design-visualization/solutions/quadro-sync/) or NVIDIA RTX PRO Sync boards (the successor of Quadro Sync II) and NVIDIA RTX PRO / Quadro GPUs that they support.

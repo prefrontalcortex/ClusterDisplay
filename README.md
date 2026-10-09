@@ -10,8 +10,8 @@ To learn about the Unity Cluster Display package (concepts, features, and workfl
 
 ### Requirements
 
-* Unity 2023.1 or newer
-* Windows 10
+* Unity 6.3 LTS (6000.3) or newer
+* Windows 11 (tested), Windows 10
 
 ### Check out the licensing model
 

@@ -6,7 +6,7 @@ See the [Cluster Display documentation](../../../source/com.unity.cluster-displa
 
 ## Requirements
 
-Cluster Display Graphics depends on URP or HDRP 14.0.3 (Unity 2022.2 and above). Install either "Universal RP" or "High Definition RP" from the package manager.
+Cluster Display Graphics depends on URP or HDRP 17.3 (Unity 6.3 LTS). Install either "Universal RP" or "High Definition RP" from the package manager.
 
 ## Using Unity.ClusterDisplay.Graphics
 

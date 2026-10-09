@@ -45,3 +45,23 @@ The communication between the emitter and the clients happens in 2 phases:
 
   - The emitter node waits up a predetermined timeout before kicking out an unresponsive node from the cluster.
   - The client nodes wait up a predetermined timeout for an unresponsive emitter node before quitting.
+
+## Time synchronization
+
+The time of the engine (`Time.time`, `Time.deltaTime`, `Time.frameCount`, ...) must be identical on every node. There are two modes, selected with the **Time Sync** setting of the cluster parameters or the `-timeSync` command line argument:
+
+| Mode | Command line | Description |
+|---|---|---|
+| **Engine State** (default) | `-timeSync engineState` | The emitter sends the state of the engine's time manager with every frame and repeaters apply it. Time follows the real frame time of the emitter. Based on `ClusterSerialization`, which Unity has deprecated without public replacement. |
+| **Fixed Step** | `-timeSync fixedStep` | Every node runs with the same fixed time step (`Time.captureFramerate`, set to **Target Fps**, 60 when not set) from the first frame, and nothing about time is sent over the network. `Time.time`, `Time.deltaTime` and `Time.frameCount` are identical on every node. |
+
+Things to know about **Fixed Step**:
+
+* Set **Target Fps** (`-targetFps`) to the refresh rate of the displays.
+* A frame that takes longer than the time step plays in slow motion instead of skipping ahead.
+* `Time.unscaledTime` and `Time.realtimeSinceStartup` are real elapsed time since the process started and are **not** synchronized: do not use them for anything that must match between nodes.
+* All nodes must be started with the same value.
+
+## Network protocol version
+
+Every datagram starts with a 3-byte header: a magic byte, the protocol version and the message type. Datagrams that do not start with the magic byte are ignored (other traffic on the same multicast address and port); datagrams with a different protocol version are dropped and a warning is logged once. All the nodes of a cluster must therefore run the same version of Cluster Display.

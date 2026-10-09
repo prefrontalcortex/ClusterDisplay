@@ -24,7 +24,7 @@ It consists of four parts:
 
 ### Common
 
-* Every computer running one of the previously listed four parts will need to have the .Net Core 6.0 runtime installed: <https://dotnet.microsoft.com/en-us/download/dotnet/6.0>.
+* Every computer running one of the previously listed four parts will need to have the .NET 8 runtime installed: <https://dotnet.microsoft.com/en-us/download/dotnet/8.0>.
   > ℹ️ _**Remarks:**_ There are multiple components that can be download from that page, what is needed is the "ASP.NET Core Runtime" Hosting Bundle.
 * The listed setup steps below assumes that TCP ports 8000 - 9000 are free and can be used by services to listen for HTTP requests (to simplify the procedure).
 

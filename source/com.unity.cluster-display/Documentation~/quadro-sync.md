@@ -20,9 +20,9 @@ Notice that the camera cuts **are perfectly synchronized** across the cluster.
 
 * Only supported on DirectX 11 or DirectX 12.
 * Requires one or more [NVIDIA Quadro GPU](https://www.nvidia.com/en-us/design-visualization/quadro/)s.
-* Requires one or more [NVIDIA Quadro Sync II](https://www.nvidia.com/en-us/design-visualization/solutions/quadro-sync/) boards.
-* Windows 10
-* Unity 2022.x+
+* Requires one or more [NVIDIA Quadro Sync II](https://www.nvidia.com/en-us/design-visualization/solutions/quadro-sync/) boards or NVIDIA RTX PRO Sync boards (the successor of Quadro Sync II).
+* Windows 11 (tested), Windows 10
+* Unity 6.3 LTS (6000.3) or later (the native plugin is built against the Unity 6.3 plugin API headers; not verified with synchronization hardware after the migration to Unity 6)
 
 ## Recommendations
 
