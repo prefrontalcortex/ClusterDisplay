@@ -14,6 +14,7 @@ namespace Unity.ClusterDisplay
     {
         End = 0,
         Time = 1,
+        /// <remarks>Reserved: was the legacy Input Manager state (removed), the value must not be reused.</remarks>
         Input = 2,
         Random = 3,
         CustomEvents = 4,

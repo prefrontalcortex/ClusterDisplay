@@ -301,14 +301,14 @@ namespace Unity.ClusterDisplay
                     ServiceLocator.Provide(new InputSystemReplicator(NodeRole.Emitter));
                     break;
 #endif
-                case InputSync.Legacy:
-                    EmitterStateWriter.RegisterOnStoreCustomDataDelegate((int)StateID.Input,
-                        ClusterSerialization.SaveInputManagerState);
-                    break;
                 case InputSync.None:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    // Value that is not supported anymore (the legacy Input Manager, 2) or not available (Input
+                    // System package not enabled): do not fail, input is just not synchronized.
+                    ClusterDebug.LogWarning($"Input synchronization {clusterNodeConfig.InputSync} is not supported, " +
+                        "inputs will not be synchronized.");
+                    break;
             }
         }
 
@@ -321,14 +321,14 @@ namespace Unity.ClusterDisplay
                     ServiceLocator.Provide(new InputSystemReplicator(NodeRole.Repeater));
                     break;
 #endif
-                case InputSync.Legacy:
-                    RepeaterStateReader.RegisterOnLoadDataDelegate((int)StateID.Input,
-                        ClusterSerialization.RestoreInputManagerState);
-                    break;
                 case InputSync.None:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    // Value that is not supported anymore (the legacy Input Manager, 2) or not available (Input
+                    // System package not enabled): do not fail, input is just not synchronized.
+                    ClusterDebug.LogWarning($"Input synchronization {clusterNodeConfig.InputSync} is not supported, " +
+                        "inputs will not be synchronized.");
+                    break;
             }
         }
 
@@ -341,14 +341,14 @@ namespace Unity.ClusterDisplay
                     ServiceLocator.Withdraw<InputSystemReplicator>();
                     break;
 #endif
-                case InputSync.Legacy:
-                    RepeaterStateReader.UnregisterOnLoadDataDelegate((int)StateID.Input,
-                        ClusterSerialization.RestoreInputManagerState);
-                    break;
                 case InputSync.None:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    // Value that is not supported anymore (the legacy Input Manager, 2) or not available (Input
+                    // System package not enabled): do not fail, input is just not synchronized.
+                    ClusterDebug.LogWarning($"Input synchronization {clusterNodeConfig.InputSync} is not supported, " +
+                        "inputs will not be synchronized.");
+                    break;
             }
         }
 

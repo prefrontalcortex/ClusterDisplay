@@ -52,12 +52,8 @@ namespace Unity.ClusterDisplay
         /// <summary>
         /// Synchronize inputs from the Input System package (new).
         /// </summary>
-        InputSystem = 1,
+        InputSystem = 1
 #endif
-        /// <summary>
-        /// Synchronize inputs from legacy Input Manager (old).
-        /// </summary>
-        Legacy = 2
     }
 
     [Serializable]

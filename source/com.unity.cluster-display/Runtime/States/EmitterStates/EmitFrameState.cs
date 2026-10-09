@@ -87,7 +87,7 @@ namespace Unity.ClusterDisplay.EmitterStateMachine
 
                             // Looks like some repeater nodes are not responding, drop them...
                         	Debug.LogError($"Repeaters {stillWaitingOn} did not signaled they were ready within " +
-                            	$"{Node.EffectiveCommunicationTimeout.TotalSeconds} seconds, they will be dropped from " +
+                            	$"{Node.EffectiveCommunicationTimeout.TotalSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture)} seconds, they will be dropped from " +
                             	$"the cluster.");
 
                             m_StartHandler.DropRepeaters(stillWaitingOn);
