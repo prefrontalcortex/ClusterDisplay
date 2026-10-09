@@ -1,23 +1,24 @@
 #if CLUSTER_DISPLAY_URP
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.Universal;
-using UnityEngine;
 
 namespace Unity.ClusterDisplay.Graphics
 {
     /// <summary>
     /// A render pass whose purpose is to invoke an event at the desired stage of rendering.
     /// </summary>
+    /// <remarks>Records its work in the Render Graph, the only path left in Unity 6.3+ (URP Compatibility Mode, the
+    /// <c>Execute</c> based path, is deprecated and removed from Unity 6.4).  Subscribers add their own passes to the
+    /// render graph from the event.</remarks>
     class InjectionPointRenderPass : ScriptableRenderPass
     {
-        public static event Action<ScriptableRenderContext, RenderingData> ExecuteRender = delegate {};
+        public static event Action<RenderGraph, ContextContainer> RecordRender = delegate {};
 
-        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+        public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
         {
-            ExecuteRender.Invoke(context, renderingData);
+            RecordRender.Invoke(renderGraph, frameData);
         }
     }
 
