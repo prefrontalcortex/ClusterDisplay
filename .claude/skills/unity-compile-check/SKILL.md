@@ -47,3 +47,18 @@ Wertet das letzte Compile-Log aus; nützlich, um die nächste Datei für `unity-
 - **Repo ist ein Package, kein Projekt**: Es gibt kein `ProjectSettings/` im Root. Das Host-/Testprojekt aus `CLAUDE.md` als Pfad übergeben.
 - **API Updater**: Beim ersten Öffnen in neuer Unity-Version schreibt Unity Code automatisch um. Vorher committen, danach den Diff des Updaters prüfen und separat committen.
 - **Erster Lauf dauert lange** (Library-Import). Nicht als Hänger interpretieren.
+
+## Zusätzliche Skripte (Bildtests, Player-Build, Zwei-Node-Smoke-Test)
+
+```bash
+# Tests MIT GPU (nötig für Bildvergleichstests in GraphicsTestsURP/HDRP; run_tests.sh nutzt -nographics und taugt dafür nicht)
+.claude/skills/unity-compile-check/scripts/gfx_tests.sh TestProjects/GraphicsTestsURP PlayMode
+
+# Windows-Player bauen; beendet Unity selbst nach "Build Finished" (Unity hing nach Builds schon ~7 h in einer Fehlerschleife)
+.claude/skills/unity-compile-check/scripts/build_player.sh TestProjects/pfcClusterBasicTestURP builds/rg
+
+# Emitter + Repeater als zwei Player-Instanzen über Multicast auf diesem Rechner (Signal: beide leben > Handshake-/Kommunikations-Timeout)
+.claude/skills/unity-compile-check/scripts/two_node_smoke.sh TestProjects/pfcClusterBasicTestURP/builds/rg/pfcClusterBasicTestURP.exe "Ethernet 2" 30
+```
+
+Alle Skripte setzen Timeouts; Unity-Prozesse niemals ohne Zeitlimit starten. Nach Tests/Builds Nebenänderungen von Unity (z. B. `SceneTemplateSettings.json`, gelöschte `PerformanceTestRun*.json`) nicht committen.

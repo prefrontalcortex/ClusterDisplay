@@ -31,7 +31,7 @@ namespace Unity.ClusterDisplay.Graphics
                 return;
             }
 
-            clusterRenderer.DelayPresentByOneFrame =
+            clusterRenderer.DelayPresentByOneFrame = clusterSync != null &&
                 clusterSync.NodeRole is NodeRole.Emitter && clusterSync.RepeatersDelayedOneFrame;
 
             if (Application.isPlaying && clusterRenderer.ProjectionPolicy is { } projectionPolicy)
@@ -88,6 +88,13 @@ namespace Unity.ClusterDisplay.Graphics
 
         static bool TryGetVector2Int(JObject rawLaunchData, string parameterName, out Vector2Int value)
         {
+            // No launch data when not started by Mission Control.
+            if (rawLaunchData == null)
+            {
+                value = Vector2Int.zero;
+                return false;
+            }
+
             var xValue = rawLaunchData.Value<int?>($"{parameterName}.X");
             var yValue = rawLaunchData.Value<int?>($"{parameterName}.Y");
             if (xValue is > 0 && yValue is > 0)

@@ -781,7 +781,7 @@ PlayerSettings:
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
   scriptingDefineSymbols:
-    Standalone: LWRP_DEBUG_STATIC_POSTFX;URP_COMPATIBILITY_MODE
+    Standalone: LWRP_DEBUG_STATIC_POSTFX
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

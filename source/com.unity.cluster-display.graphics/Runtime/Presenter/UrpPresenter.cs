@@ -1,13 +1,16 @@
-﻿#if CLUSTER_DISPLAY_URP
+#if CLUSTER_DISPLAY_URP
 using System;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Rendering.RenderGraphModule;
 using UnityEngine.Rendering.Universal;
 
 namespace Unity.ClusterDisplay.Graphics
 {
     class UrpPresenter : SrpPresenter, IPresenter
     {
+        const string k_PassName = "Present To Screen";
+
         public Color ClearColor
         {
             set => m_ClearColor = value;
@@ -34,11 +37,11 @@ namespace Unity.ClusterDisplay.Graphics
         {
             if (delayed)
             {
-                InjectionPointRenderPass.ExecuteRender += ExecuteRenderDelayed;
+                InjectionPointRenderPass.RecordRender += RecordPresentDelayed;
             }
             else
             {
-                InjectionPointRenderPass.ExecuteRender += ExecuteRender;
+                InjectionPointRenderPass.RecordRender += RecordPresent;
             }
         }
 
@@ -46,31 +49,71 @@ namespace Unity.ClusterDisplay.Graphics
         {
             if (delayed)
             {
-                InjectionPointRenderPass.ExecuteRender -= ExecuteRenderDelayed;
+                InjectionPointRenderPass.RecordRender -= RecordPresentDelayed;
             }
             else
             {
-                InjectionPointRenderPass.ExecuteRender -= ExecuteRender;
+                InjectionPointRenderPass.RecordRender -= RecordPresent;
             }
         }
 
-        static RTHandle GetBackBuffer(RenderingData renderingData) => renderingData.cameraData.renderer.cameraColorTargetHandle;
-
-        void ExecuteRender(ScriptableRenderContext context, RenderingData renderingData)
+        class PassData
         {
+            public UrpPresenter Presenter;
+            public TextureHandle BackBuffer;
+            public RenderTextureDescriptor Descriptor;
+            public bool Delayed;
+        }
+
+        void RecordPresent(RenderGraph renderGraph, ContextContainer frameData) =>
+            RecordPresent(renderGraph, frameData, false);
+
+        void RecordPresentDelayed(RenderGraph renderGraph, ContextContainer frameData) =>
+            RecordPresent(renderGraph, frameData, true);
+
+        void RecordPresent(RenderGraph renderGraph, ContextContainer frameData, bool delayed)
+        {
+            var cameraData = frameData.Get<UniversalCameraData>();
+
             // The render pass gets invoked for all cameras so we need to filter.
-            if (renderingData.cameraData.camera == m_Camera)
+            if (cameraData.camera != m_Camera)
             {
-                DoPresent(context, GetBackBuffer(renderingData), false);
+                return;
+            }
+
+            var resourceData = frameData.Get<UniversalResourceData>();
+
+            // The work is done with a CommandBuffer (the Present event hands one to our subscribers), which is what an
+            // unsafe pass gives access to.
+            using (var builder = renderGraph.AddUnsafePass<PassData>(k_PassName, out var passData))
+            {
+                var descriptor = cameraData.cameraTargetDescriptor;
+                descriptor.depthBufferBits = 0;
+                descriptor.msaaSamples = 1;
+
+                passData.Presenter = this;
+                passData.BackBuffer = resourceData.activeColorTexture;
+                passData.Descriptor = descriptor;
+                passData.Delayed = delayed;
+
+                builder.UseTexture(passData.BackBuffer, AccessFlags.Write);
+                builder.AllowPassCulling(false);
+                builder.SetRenderFunc(static (PassData data, UnsafeGraphContext context) =>
+                    data.Presenter.ExecutePresent(data, context));
             }
         }
 
-        void ExecuteRenderDelayed(ScriptableRenderContext context, RenderingData renderingData)
+        void ExecutePresent(PassData data, UnsafeGraphContext context)
         {
-            // The render pass gets invoked for all cameras so we need to filter.
-            if (renderingData.cameraData.camera == m_Camera)
+            var cmd = CommandBufferHelpers.GetNativeCommandBuffer(context.cmd);
+            RTHandle backBuffer = data.BackBuffer;
+            if (data.Delayed)
             {
-                DoPresentDelayed(context, GetBackBuffer(renderingData), false);
+                DoPresentDelayed(cmd, data.Descriptor, backBuffer, false);
+            }
+            else
+            {
+                DoPresent(cmd, backBuffer, false);
             }
         }
     }
