@@ -164,6 +164,19 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl.Services
                         "health information to be outdated",
                         String.Join(", ", healthFetch.Keys.Select(id => id.ToString())));
                     thisUpdateCancelSource.Cancel();
+
+                    // A LaunchPad that does not answer must not keep being displayed with its last known (healthy)
+                    // values, report it as being in error.
+                    foreach (var pendingId in healthFetch.Keys)
+                    {
+                        LaunchPadHealth noAnswer = new(pendingId);
+                        noAnswer.UpdateError = "No answer from the LaunchPad before the end of the health monitoring " +
+                            "interval.";
+                        if (m_Collection.TryGetValue(pendingId, out var current) && !noAnswer.Equals(current))
+                        {
+                            m_Collection[pendingId] = noAnswer;
+                        }
+                    }
                 }
 
                 // Wait for next refresh

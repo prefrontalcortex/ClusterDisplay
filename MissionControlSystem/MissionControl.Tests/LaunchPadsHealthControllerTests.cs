@@ -303,7 +303,9 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             m_LaunchPadStubs.Last().Stop();
             m_LaunchPadStubs.RemoveAt(m_LaunchPadStubs.Count - 1);
 
-            timeoutTask = Task.Delay(TimeSpan.FromSeconds(5));
+            // The health of launchpads is updated every HealthMonitoringIntervalSec (5 seconds by default), give it a
+            // full interval plus the time to fail to connect.
+            timeoutTask = Task.Delay(TimeSpan.FromSeconds(15));
             finishedTask = await Task.WhenAny(b1HealthInErrorTask, timeoutTask);
             Assert.That(finishedTask, Is.SameAs(b1HealthInErrorTask)); // Otherwise we timed out
 
