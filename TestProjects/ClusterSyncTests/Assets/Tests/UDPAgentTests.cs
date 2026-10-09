@@ -385,6 +385,60 @@ namespace Unity.ClusterDisplay.Tests
             Assert.That(receivedByRemovedPreprocess, Is.False);
         }
 
+        [Test]
+        public void ForeignDatagramIsIgnored()
+        {
+            using var sender = new UdpAgent(GetConfig(null));
+            using var receiver = new UdpAgent(GetConfig(new [] {MessageType.RegisteringWithEmitter}));
+
+            // Something else talking on the same multicast group and port (does not start with the protocol magic).
+            SendRawDatagram(sender, new byte[] { 0x00, UdpAgent.ProtocolVersion, (byte)MessageType.RegisteringWithEmitter, 42, 1, 2, 3, 4 });
+            Assert.That(receiver.TryConsumeNextReceivedMessage(TimeSpan.FromMilliseconds(500)), Is.Null);
+
+            // And a valid message still goes through.
+            SendRegisteringWithEmitter(sender, 42);
+            using var received = receiver.TryConsumeNextReceivedMessage(TimeSpan.FromSeconds(10));
+            Assert.That(received, Is.Not.Null);
+            Assert.That((received as ReceivedMessage<RegisteringWithEmitter>)?.Payload.NodeId, Is.EqualTo(42));
+        }
+
+        [Test]
+        public void DifferentProtocolVersionIsIgnored()
+        {
+            using var sender = new UdpAgent(GetConfig(null));
+            using var receiver = new UdpAgent(GetConfig(new [] {MessageType.RegisteringWithEmitter}));
+
+            // Warned about only once, even if many datagrams are received
+            LogAssert.Expect(LogType.Warning, new System.Text.RegularExpressions.Regex("network protocol version"));
+            var otherVersion = (byte)(UdpAgent.ProtocolVersion + 1);
+            for (int i = 0; i < 5; ++i)
+            {
+                SendRawDatagram(sender, new byte[] { 0xCD, otherVersion, (byte)MessageType.RegisteringWithEmitter, 42, 1, 2, 3, 4 });
+            }
+            Assert.That(receiver.TryConsumeNextReceivedMessage(TimeSpan.FromMilliseconds(500)), Is.Null);
+
+            // And a valid message still goes through.
+            SendRegisteringWithEmitter(sender, 43);
+            using var received = receiver.TryConsumeNextReceivedMessage(TimeSpan.FromSeconds(10));
+            Assert.That((received as ReceivedMessage<RegisteringWithEmitter>)?.Payload.NodeId, Is.EqualTo(43));
+        }
+
+        static void SendRegisteringWithEmitter(UdpAgent sender, byte nodeId)
+        {
+            RegisteringWithEmitter message;
+            message.NodeId = nodeId;
+            message.IPAddressBytes = BitConverter.ToUInt32(sender.AdapterAddress.GetAddressBytes());
+            sender.SendMessage(MessageType.RegisteringWithEmitter, message);
+        }
+
+        static void SendRawDatagram(UdpAgent sender, byte[] datagram)
+        {
+            using var rawClient = new System.Net.Sockets.UdpClient();
+            rawClient.Client.SetSocketOption(System.Net.Sockets.SocketOptionLevel.IP,
+                System.Net.Sockets.SocketOptionName.MulticastInterface, sender.AdapterAddress.GetAddressBytes());
+            rawClient.Send(datagram, datagram.Length, new IPEndPoint(IPAddress.Parse("224.0.1.0"), k_TestPort));
+        }
+
         static UdpAgentConfig GetConfig(MessageType[] receivedMessagesType)
         {
             return new UdpAgentConfig()

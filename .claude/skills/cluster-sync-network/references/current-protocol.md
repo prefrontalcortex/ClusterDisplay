@@ -5,6 +5,7 @@ Pfade relativ zu `source/com.unity.cluster-display/Runtime/` (Kürzel `R/`), sof
 "unklar" = aus dem Code allein nicht sicher ableitbar. Abschnitt 6 trennt Beobachtungen/Risiken von den Fakten.
 Dies ist die Ist-Beschreibung, nicht die Soll-Vorlage aus `wire-format.md` (die ist ein Entwurf, den der Code nicht umsetzt).
 
+> **Änderung 2026-10-09 (M-43a/M-43b), geht dem Rest dieses Dokuments vor:** Datagramme haben jetzt einen 3-Byte-Header `[Magic 0xCD][ProtocolVersion][MessageType]` (vorher nur `[MessageType]`; `UdpAgent.ProtocolVersion`, aktuell 1, bei jeder Wire-Änderung erhöhen). Datagramme ohne Magic werden still ignoriert, mit anderer Version verworfen und **einmal pro Version** als Warnung geloggt. `MaximumMessageSize` = `Mtu - 28 (IPv4+UDP) - 3` (vorher `Mtu - 1`, dadurch IP-Fragmentierung). Alle Angaben unten zu „kein Magic/keine Version“ und zur MTU sind damit überholt.
 ## 1. Topologie und Rollen
 
 - Rollen (`NodeRole`): Emitter, Repeater, Backup (plus Unassigned). Genau ein Emitter, n Repeater, optional Backups. Auswahl über `ClusterParams.Role` -> `ClusterSync.TryInitialize` (`R/ClusterSync.cs:355-397`).

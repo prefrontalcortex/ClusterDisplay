@@ -88,7 +88,7 @@ namespace Unity.ClusterDisplay
             }
             // The MTU includes the IP and UDP headers: a datagram bigger than that would be fragmented by the IP layer
             // (more load, a lost fragment loses the whole datagram).
-            MaximumMessageSize = m_Mtu - k_IpUdpHeadersSize - 1 /*for the Message type*/;
+            MaximumMessageSize = m_Mtu - k_IpUdpHeadersSize - k_HeaderSize;
 
             // Create the UdpClient
             m_UdpClient = new();
@@ -146,6 +146,27 @@ namespace Unity.ClusterDisplay
         /// </summary>
         const int k_IpUdpHeadersSize = 28;
 
+        /// <summary>
+        /// First byte of every datagram, used to ignore datagrams that are not ours (other traffic on the same
+        /// multicast group and port).
+        /// </summary>
+        const byte k_ProtocolMagic = 0xCD;
+
+        /// <summary>
+        /// Version of the wire format (datagram header, <see cref="MessageType"/> and message structures).  Must be
+        /// incremented every time something sent over the network changes, nodes with a different version cannot work
+        /// together (the datagrams are dropped and a warning is logged).
+        /// </summary>
+        /// <remarks>History: 1 = first versioned format (header: magic, version, message type).  Before it datagrams had
+        /// no magic or version, only the message type.</remarks>
+        public const byte ProtocolVersion = 1;
+
+        /// <summary>
+        /// Size of the header of every datagram: magic (1 byte), <see cref="ProtocolVersion"/> (1 byte) and
+        /// <see cref="MessageType"/> (1 byte).
+        /// </summary>
+        const int k_HeaderSize = 3;
+
         public IPAddress AdapterAddress { get; private set; }
 
         public int MaximumMessageSize { get; private set; }
@@ -160,7 +181,7 @@ namespace Unity.ClusterDisplay
             // Remarks, Assert below check for profiler otherwise GetTypeOf generate tons of GC Alloc that makes
             // profiling unnecessarily alarming.
             Assert.IsTrue(Profiler.enabled || MessageTypeAttribute.GetTypeOf<TM>() == messageType);
-            if (Marshal.SizeOf(typeof(TM)) + sizeof(MessageType) + additionalData.Length > m_Mtu - k_IpUdpHeadersSize)
+            if (Marshal.SizeOf(typeof(TM)) + k_HeaderSize + additionalData.Length > m_Mtu - k_IpUdpHeadersSize)
             {
                 throw new ArgumentException("Marshal.SizeOf(typeof(TM)) + additionalData.Length > MaximumMessageSize.");
             }
@@ -168,9 +189,11 @@ namespace Unity.ClusterDisplay
             byte[] sendTempBuffer = m_SendTempBuffers.Get();
             try
             {
-                sendTempBuffer[0] = (byte)messageType;
-                int toSendSize = 1;
-                toSendSize += message.StoreInBuffer(sendTempBuffer, 1);
+                sendTempBuffer[0] = k_ProtocolMagic;
+                sendTempBuffer[1] = ProtocolVersion;
+                sendTempBuffer[2] = (byte)messageType;
+                int toSendSize = k_HeaderSize;
+                toSendSize += message.StoreInBuffer(sendTempBuffer, k_HeaderSize);
                 if (additionalData.Length > 0)
                 {
                     NativeArray<byte>.Copy(additionalData, 0, sendTempBuffer, toSendSize, additionalData.Length);
@@ -372,6 +395,26 @@ namespace Unity.ClusterDisplay
         }
 
         /// <summary>
+        /// Log (only once per different version, this is called from the reception thread for every datagram) that a
+        /// datagram with a different protocol version was received.
+        /// </summary>
+        void ReportProtocolVersionMismatch(byte receivedVersion)
+        {
+            if (m_LastReportedMismatchVersion == receivedVersion)
+            {
+                return;
+            }
+            m_LastReportedMismatchVersion = receivedVersion;
+            Debug.LogWarning($"Ignoring datagrams with network protocol version {receivedVersion}, this node uses " +
+                $"version {ProtocolVersion}.  All nodes of the cluster must run the same version of Cluster Display.");
+        }
+
+        /// <summary>
+        /// Last protocol version for which <see cref="ReportProtocolVersionMismatch"/> logged a warning (-1 for none).
+        /// </summary>
+        int m_LastReportedMismatchVersion = -1;
+
+        /// <summary>
         /// Datagram reception thread function (looping until UdpAgentConfig is disposed of).
         /// </summary>
         void ProcessIncomingDatagrams()
@@ -387,7 +430,7 @@ namespace Unity.ClusterDisplay
                     try
                     {
                         receivedLength = m_UdpClient.Client.Receive(receiveReceivedMessageData.RawArray);
-                        if (receivedLength < 1)
+                        if (receivedLength < k_HeaderSize)
                         {
                             // Empty message, strange, let's just skip it...
                             continue;
@@ -421,7 +464,18 @@ namespace Unity.ClusterDisplay
                 using (s_MarkerCreateMessage.Auto())
                 {
                     // Get the factory for it
-                    var messageTypeByte = receiveReceivedMessageData.RawArray[0];
+                    // Datagrams that are not ours (other traffic on the same multicast group and port) are ignored.
+                    if (receiveReceivedMessageData.RawArray[0] != k_ProtocolMagic)
+                    {
+                        continue;
+                    }
+                    var receivedVersion = receiveReceivedMessageData.RawArray[1];
+                    if (receivedVersion != ProtocolVersion)
+                    {
+                        ReportProtocolVersionMismatch(receivedVersion);
+                        continue;
+                    }
+                    var messageTypeByte = receiveReceivedMessageData.RawArray[2];
                     var receivedFactory = messageTypeByte < m_FactoryByMessageType.Length ? m_FactoryByMessageType[messageTypeByte] : null;
                     if (receivedFactory == null)
                     {
@@ -437,7 +491,7 @@ namespace Unity.ClusterDisplay
                     {
                         int leftOver;
                         (receivedMessage, leftOver) =
-                            receivedFactory(new ReadOnlySpan<byte>(receiveReceivedMessageData.RawArray, 1, receivedLength - 1));
+                            receivedFactory(new ReadOnlySpan<byte>(receiveReceivedMessageData.RawArray, k_HeaderSize, receivedLength - k_HeaderSize));
                         if (receivedMessage == null)
                         {
                             // A "normal failure" in the factory?  Let's continue...
