@@ -2,6 +2,20 @@
 
 Stand der Erstanalyse: 2026-10-08 (Branch `dotnet-update`). Gemeinsames Gedächtnis zwischen Sessions – nach jedem Task Status, Messwerte und Commit eintragen.
 
+## Stand 2026-10-12 Abend: Zwei-Rechner-Test PC + Laptop (WLAN), offen
+
+**Aufbau:** PC (192.168.1.102, "Ethernet 2", RTX 5070 Ti, D3D12) + Laptop (192.168.1.106, nur WLAN, GTX 1050, D3D11). Testinstallation `H:\Projekt\_mc_test` (Kit für den Laptop: `laptop-kit\`). Laptop als zweiter Launch Complex mit eigener HangarBay/LaunchPad eingebunden; Build wird über die HangarBay auf den Laptop übertragen und gestartet (belegt).
+
+**Problem:** Der Cluster kommt nicht zustande. Der Handshake scheitert: Pakete des **Laptop-Players** (Multicast, WLAN) erreichen den PC nie, in beiden Rollen (Laptop als Repeater: `InvalidDataException ... Frame 1 ... expecting frame 0`; Laptop als Emitter: PC-Repeater `TimeoutException`). PC → Laptop funktioniert (Laptop-Emitter bekam 154 Registrierungen).
+
+**Belegt/ausgeschlossen (alle mit Messung):** rohe Multicast-Tests Laptop → PC kommen an (auch gebunden an die Adapter-IP, Quellport 25690, TTL 1, `ReuseAddress`; nur die ersten Sekunden gehen verloren). Nicht die Ursache: PC-Firewall (Regel vorhanden, keine Block-Regel), Handshake-Zeit (40 s ändert nichts), Quellport/Bindung, PC-Standardroute. Fehlerbild im Player tritt nur bei Paketen des Laptop-**Players** auf.
+
+**Code-Befund (lokal, nicht committet):** `UDPAgent.cs` trat der Multicast-Gruppe ohne Adapter bei (`JoinMulticastGroup(ip)`) → Windows nimmt den Adapter mit der besten Multicast-Route, auf dem Laptop sind das virtuelle Adapter (WLAN hat dort die schlechteste Metrik 291). Geändert auf `JoinMulticastGroup(ip, AdapterAddress)`. **Allein hat das den Fehler nicht behoben** (Lauf mit neuem Build, PC-Repeater Recv = 0). Fix bleibt sinnvoll, Commit erst nach Klärung.
+
+**Nächster Schritt (offen):** Auf dem Laptop `Set-NetIPInterface -InterfaceAlias WLAN -AddressFamily IPv4 -InterfaceMetric 1` (Admin) und Cluster erneut starten, danach zurücksetzen (`-AutomaticMetric Enabled`). Prüft, ob der Player (Mono) auf dem Laptop den gewählten Adapter beim Senden ignoriert (`SetSocketOption(IP, MulticastInterface, byte[])`). Falls nein: LAN-Kabel am Laptop (Zielumgebung ist verkabelt), `netlog`-Build (`CLUSTER_DISPLAY_NETWORK_LOG`, `Standalone:` in `scriptingDefineSymbols`) auf beiden Seiten vergleichen.
+
+**Zusätzlich offen:** `MissionControlSystem/Package.ps1` (deps.json nicht mehr ausschließen) ist geändert, aber nicht committet. Einzelknoten-Starts werden nach 15 s hart beendet (keine Capsule, Design-Eigenheit). Rollen lassen sich pro Launchpad in der UI setzen (Parameter `NodeRole`), die Komplexe sind nach Hangar-Bay-ID sortiert.
+
 ## Stand 2026-10-09 (Zusammenfassung für den Wiedereinstieg)
 
 **Gemessen mit Editor 6000.3.13f1 (Mono, Windows 11, RTX 5070 Ti):** alle 9 Projekte kompilieren mit 0 Fehlern; Obsolete nur noch `ClusterSerialization` ×2 (Zeit-Sync, siehe M-42). Tests:
