@@ -1,4 +1,4 @@
-# Package.ps1
+﻿# Package.ps1
 # Ermittelt TargetFramework dynamisch aus MissionControl.csproj (Fallback net8.0)
 
 $missionControlPath = $PSScriptRoot
@@ -40,22 +40,22 @@ function Package-Folder($name, $srcRelative, $isPublish = $false, $exclude = @()
 }
 
 # Package HangarBay
-$hangarBayDstPath = Package-Folder "HangarBay" "HangarBay" $false @("appsettings.Development.json","HangarBay.deps.json")
+$hangarBayDstPath = Package-Folder "HangarBay" "HangarBay" $false @("appsettings.Development.json")
 Compress-Archive -Path (Join-Path $hangarBayDstPath "..") -DestinationPath (Join-Path $PSScriptRoot "HangarBay.zip") -Force
 
 # Package LaunchPad
-$launchPadDstPath = Package-Folder "LaunchPad" "LaunchPad" $false @("appsettings.Development.json","LaunchPad.deps.json")
+$launchPadDstPath = Package-Folder "LaunchPad" "LaunchPad" $false @("appsettings.Development.json")
 Compress-Archive -Path (Join-Path $launchPadDstPath "..") -DestinationPath (Join-Path $PSScriptRoot "LaunchPad.zip") -Force
 
 # Package MissionControl and dependencies
-$missionControlDstPath = Package-Folder "MissionControl" "MissionControl" $false @("appsettings.Development.json","MissionControl.deps.json")
+$missionControlDstPath = Package-Folder "MissionControl" "MissionControl" $false @("appsettings.Development.json")
 $dependenciesZipPath = Join-Path $missionControlDstPath ".."
 Compress-Archive -Path (Join-Path $hangarBayDstPath "*") -DestinationPath (Join-Path $dependenciesZipPath "hangarBay.zip") -Force
 Compress-Archive -Path (Join-Path $launchPadDstPath "*") -DestinationPath (Join-Path $dependenciesZipPath "launchPad.zip") -Force
 if (Test-Path (Join-Path $PSScriptRoot "MissionControl.zip")) { Remove-Item (Join-Path $PSScriptRoot "MissionControl.zip") -Force }
 Compress-Archive -Path (Join-Path $missionControlDstPath "..") -DestinationPath (Join-Path $PSScriptRoot "MissionControl.zip") -Force
 
-# Package UI (publish expected) - falls publish fehlt, automatisch dotnet publish ausführen
+# Package UI (publish expected) - falls publish fehlt, automatisch dotnet publish ausfÃ¼hren
 $uiDstPath = [IO.Path]::Combine($packagedFolder, "UI")
 if (-not (Test-Path $uiDstPath)) { New-Item $uiDstPath -ItemType Directory | Out-Null }
 
@@ -67,7 +67,7 @@ if (-not (Test-Path $uiSrcPath)) {
     Write-Host "UI publish folder not found: $uiSrcPath"
     Write-Host "Attempting 'dotnet publish' for the UI Server project..."
     if (-not (Test-Path $uiProjFullPath)) {
-        throw "UI project file not found: $uiProjFullPath - bitte Pfad prüfen oder Projekt bauen."
+        throw "UI project file not found: $uiProjFullPath - bitte Pfad prÃ¼fen oder Projekt bauen."
     }
 
     $args = @("publish", $uiProjFullPath, "-c", $buildType, "-f", $dotNetVersion)
@@ -102,3 +102,4 @@ Compress-Archive -Path $uiDstPath -DestinationPath (Join-Path $PSScriptRoot "UI.
 # Cleanup temp directories
 Remove-Item -Path $packagedFolder -Recurse -Force
 Write-Host "Packaging complete."
+
