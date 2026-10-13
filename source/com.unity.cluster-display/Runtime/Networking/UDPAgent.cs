@@ -110,8 +110,10 @@ namespace Unity.ClusterDisplay
             // Bind to receive from the selected adapter on the same port than the port we are sending to (everyone will
             // use the same port).
             m_UdpClient.Client.Bind(new IPEndPoint(AdapterAddress, m_Config.Port));
-            // Join the multicast group
-            m_UdpClient.JoinMulticastGroup(m_Config.MulticastIp);
+            // Join the multicast group on the selected adapter.  Without an explicit adapter Windows picks the interface
+            // with the best multicast route metric, which on a computer with several adapters (VPN, virtual switches,
+            // ...) is often not the adapter used for the cluster.
+            m_UdpClient.JoinMulticastGroup(m_Config.MulticastIp, AdapterAddress);
             // This is normally true by default but this is required to keep things simple (unit tests working, multiple
             // instances on the same computer, ...).  So let's get sure it is on.
             m_UdpClient.MulticastLoopback = true;
