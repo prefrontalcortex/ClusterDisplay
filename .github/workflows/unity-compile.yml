@@ -4,6 +4,12 @@ name: Unity compile
 # detected early.  Needs a Unity license: add the secrets UNITY_LICENSE (personal, .ulf content) or
 # UNITY_SERIAL + UNITY_EMAIL + UNITY_PASSWORD to the repository, then set the repository variable UNITY_CI to 'true'.
 # Without it the jobs are skipped (so the workflow does not turn red on forks without a license).
+#
+# NOT VERIFIED: this workflow has never run.  The GameCI documentation shows Linux runners (ubuntu-latest) and does not
+# state support for Windows runners or for Unity 6000.x.  The same checks are verified locally with
+# .claude/skills/unity-compile-check/scripts/{check_compile,run_tests}.sh.  If the jobs fail on windows-latest, try
+# ubuntu-latest (with the Windows build target) or a self-hosted Windows runner.  Do not use a self-hosted runner on a
+# public repository: pull requests could run code on it.
 
 on:
   workflow_dispatch:
