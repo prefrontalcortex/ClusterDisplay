@@ -1,7 +1,7 @@
 <#
   Stellt das Testpaket "test-kit" aus dem Repo, den gebauten Diensten und den Player-Builds zusammen.
 
-      .\make-kit.ps1 -Out H:\Projekt\_mc_test\test-kit -Zip
+      .\make-kit.ps1 -Out <Zielordner>\test-kit -Zip
 
   Voraussetzungen (nicht Teil des Repos):
     * Dienste-Pakete: MissionControlSystem\Package.ps1 ausgefuehrt (erzeugt HangarBay.zip, LaunchPad.zip, MissionControl.zip, UI.zip)
@@ -37,6 +37,10 @@ foreach ($p in $Players) {
 }
 Copy-Item (Join-Path $PSScriptRoot 'scripts\*.ps1') (Join-Path $Out 'scripts')
 Copy-Item (Join-Path $PSScriptRoot 'ANLEITUNG.md'), (Join-Path $PSScriptRoot 'MESSPROTOKOLL.md') $Out
+# Lizenzhinweis des enthaltenen Testmusters (Paul Bourke): muss jeder Weitergabe beiliegen
+$notice = Join-Path $repo 'THIRD-PARTY-NOTICES.md'
+if (-not (Test-Path $notice)) { throw "Fehlt: $notice (Lizenzhinweis muss dem Paket beiliegen)" }
+Copy-Item $notice $Out
 
 # Kontrolle: jede Datei der Player-Builds muss unveraendert angekommen sein
 foreach ($p in $Players) {

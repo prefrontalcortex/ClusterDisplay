@@ -10,6 +10,18 @@ und beendet wird über die Web-Oberfläche von **Mission Control** auf dem Steue
 
 Stand der Software: Branch `dotnet-update`, Unity 6000.3.13f1. Bekannte Einschränkungen stehen in Abschnitt 9.
 
+> **Sicherheitshinweis: nur in einem abgeschotteten Testnetz verwenden.**
+> Mission Control, HangarBay und LaunchPad haben **keine Anmeldung** und lauschen auf allen Netzwerkadaptern
+> (Ports 8000, 8100, 8200, 8300, 9000, dazu UDP 25690). Wer diese Ports erreicht, kann Programme auf den
+> Rechnern installieren und starten lassen. Die Setup-Skripte öffnen die Ports in der Windows-Firewall für **alle**
+> Netzwerkprofile und stellen das Profil des Cluster-Adapters auf „Privat“. Deshalb:
+> Rechner nur in einem eigenen Netz (eigener Switch, nicht mit Büro-, WLAN- oder Internetnetz verbunden) betreiben und
+> nach dem Test die Regeln entfernen und die Dienste beenden (Abschnitt 10).
+
+> **Hinweis zu Drittmaterial:** Die Player-Builds enthalten das Fulldome-Testmuster von Paul Bourke. Seine Lizenzangabe
+> steht in `THIRD-PARTY-NOTICES.md` (liegt diesem Paket bei) und muss beiliegen, wenn das Paket oder Teile davon
+> weitergegeben werden.
+
 ---
 
 ## 1. Was gebraucht wird
@@ -36,6 +48,7 @@ Rollen der beiden Rechner:
 test-kit\
   ANLEITUNG.md                diese Datei
   MESSPROTOKOLL.md            Vorlage zum Ausfüllen und Zurückschicken
+  THIRD-PARTY-NOTICES.md      Lizenzhinweis zum enthaltenen Testmuster (muss beiliegen)
   packages\                   Dienste (HangarBay, LaunchPad, MissionControl, UI als ZIP)
   player\
     release\                  Player-Build für Teil A (Automatische Grafik-API, Fenstermodus)
