@@ -121,6 +121,9 @@ Auffälligkeiten: viele Referenzen per GUID statt Name (schlecht lesbar, M-10); 
 | 2026-10-08 | E-09 URP-Present wird als Render-Graph-Pass neu gebaut (`RecordRenderGraph`), HDRP-Pfad wird beibehalten. | URP Compatibility Mode in 6.3 ausgeblendet, in 6.4 für Custom Passes entfernt; HDRP-APIs nicht obsolet (HDRP im Wartungsmodus). | Spike M-30 |
 | 2026-10-08 | E-10 Hypothese „Builds abgelehnt“: MD5-Mismatch im `LaunchCatalog.json` (CRLF/LF durch `core.autocrlf=true`, 20/176 Dateien in `pfcClusterBasicTestURP/builds/01`). | Server berechnet MD5 neu und lehnt bei einem Mismatch den Katalog ab (HTTP 400). Nicht live verifiziert. | Repro in M-04 |
 | 2026-10-08 | Vorerst Editor **6000.3.13f1** (`D:\Program Files\Unity\Hub\6000.3.13f1\Editor\Unity.exe`) für M-02 ff. | Nutzerentscheidung; 6000.3.26f1 nicht installiert. `ProjectVersion.txt` bei M-02 auf 6000.3.13f1 heben, Patchlevel später angleichen. | Patchlevel 26f1 |
+| 2026-10-13 | E-11 Zeit-Sync-Standard bleibt **Engine-Zustand** (`TimeSync.EngineState`); fester Takt (`TimeSync.FixedStep`) bleibt optional, eine andere Lösung wird bei Bedarf erwogen. | Nutzerentscheidung im Teammeeting; entscheidet die offene Frage aus der Montags-Agenda. Standard war ohnehin unverändert. |
+| 2026-10-13 | E-12 Mehr-Rechner-Tests laufen vorerst weiter über **WLAN** (kein Kabel/Switch verfügbar). | Nutzerentscheidung; Folge: Handshake-Probleme auf WLAN-Multicast sind einzuplanen, Zielumgebung bleibt verkabelt. |
+| 2026-10-13 | E-13 Quadro/RTX-PRO-Sync-Hardware kann derzeit **nicht beschafft** werden; ein **Forschungspartner mit Hardware** wäre bereit zu testen (M-63/M-64/M-65 über Partner). | Nutzer: Beschaffung nicht möglich. Voraussetzung: lauffähiges Test-Paket (Player-Build, Anleitung, Messprotokoll), noch zu erstellen. |
 
 ## Backlog
 Status: `[ ]` offen · `[~]` in Arbeit · `[x]` erledigt · `[-]` aufgeteilt · `[manuell]` Hardware-/Installations-Prüfung durch Nutzer
