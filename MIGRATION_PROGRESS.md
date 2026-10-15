@@ -19,9 +19,9 @@ Stand der Erstanalyse: 2026-10-08 (Branch `dotnet-update`). Gemeinsames Gedächt
 1. **Zwei-Rechner-Test im Firmennetz, verkabelt** (Paket `TestKit/`, `ANLEITUNG.md` Teil A, Messprotokoll ausfüllen). Abnahme: Handshake unter 5 s, 10 Minuten ohne Abbruch, Bildrate ≈ Zielwert, Beenden mit Stop innerhalb von 15 s.
 2. **Partnertest mit Quadro/RTX PRO Sync** (Teil B, DX11 dann DX12). Das Plugin ist noch nie mit Hardware gelaufen; Messprotokoll kommt zurück.
 3. **Push-Entscheidung** (10 lokale Commits nicht im Fork). Vorher bewusst entscheiden: Umgang mit den bereits öffentlichen Autorenangaben und Windows-Benutzernamen in der Historie (siehe M-82); gitleaks falls ein Rechner mit laufendem Docker verfügbar ist.
-4. Danach M-52 (RPC-Strategie) und M-70 (Version 0.2.0).
+4. Danach **M-83** (.NET 10 und Absicherung; Frist: .NET 8 endet am 10.11.2026), dann M-52 (RPC-Strategie) und M-70 (Version 0.2.0).
 
-Entschieden: Zeit-Sync-Standard bleibt Engine-Zustand (E-11), WLAN-Tests vorerst (E-12), Hardware-Beschaffung derzeit nicht möglich, Partner testet (E-13), CI wird nicht weiterverfolgt (E-14). Geschoben: USB-Ethernet-Adapter für den Laptop.
+Entschieden: Zeit-Sync-Standard bleibt Engine-Zustand (E-11), WLAN-Tests vorerst (E-12), Hardware-Beschaffung derzeit nicht möglich, Partner testet (E-13), CI wird nicht weiterverfolgt (E-14), bei .NET bleiben (E-15). Geschoben: USB-Ethernet-Adapter für den Laptop.
 
 **Beobachtungen:** Einzelknoten-Starts werden nach 15 s hart beendet (keine Capsule, Design-Eigenheit). Rollen lassen sich pro Launchpad in der UI setzen (Parameter `NodeRole`); die Komplexe sind nach Hangar-Bay-ID sortiert. `dotnet test` hängt, solange die echten Dienste auf demselben Rechner laufen (siehe Log M-05).
 
@@ -134,6 +134,7 @@ Auffälligkeiten: viele Referenzen per GUID statt Name (schlecht lesbar, M-10); 
 | 2026-10-13 | E-12 Mehr-Rechner-Tests laufen vorerst weiter über **WLAN** (kein Kabel/Switch verfügbar). | Nutzerentscheidung; Folge: Handshake-Probleme auf WLAN-Multicast sind einzuplanen, Zielumgebung bleibt verkabelt. |
 | 2026-10-13 | E-13 Quadro/RTX-PRO-Sync-Hardware kann derzeit **nicht beschafft** werden; ein **Forschungspartner mit Hardware** wäre bereit zu testen (M-63/M-64/M-65 über Partner). | Nutzer: Beschaffung nicht möglich. Voraussetzung: lauffähiges Test-Paket (Player-Build, Anleitung, Messprotokoll), noch zu erstellen. |
 | 2026-10-13 | E-14 CI wird nicht weiterverfolgt (M-05 `[-]`): Unity-CI ist unverifiziert, braucht die Unity-Lizenz als Secret und prüft Rendering/Netzwerk/Hardware ohnehin nicht; der lokale Weg (`unity-compile-check`-Skripte) ist belegt. Behalten werden `secret-scan.yml` und `mission-control-ci.yml`. | Nutzerentscheidung (folgt der Empfehlung): Einzelperson am Fork, wenig Pull Requests; wichtiger sind Kabeltest und Partnertest. |
+| 2026-10-13 | E-15 Die Dienste (MissionControl, HangarBay, LaunchPad, Oberfläche) bleiben bei **.NET/ASP.NET Core**; kein Rewrite (auch nicht auf Node.js). Die Oberfläche in TypeScript ist eine spätere Option, kein Auftrag. | Nutzerentscheidung (folgt der Empfehlung): .NET ist die Sprache der Unity-Entwicklung, Unity zieht selbst nach CoreCLR (M-72), .NET 10 LTS wird bis 14.11.2028 unterstützt (Microsoft-Support-Policy), starke Typisierung und 595 Tests helfen der KI-Unterstützung; die REST-Schnittstelle hält einen späteren Austausch einzelner Teile offen. Umfang gemessen: ca. 24.000 Zeilen Produktivcode, 52 HTTP-Aktionen, ca. 24.000 Zeilen Tests. |
 
 ## Backlog
 Status: `[ ]` offen · `[~]` in Arbeit · `[x]` erledigt · `[-]` aufgeteilt · `[manuell]` Hardware-/Installations-Prüfung durch Nutzer
@@ -194,6 +195,7 @@ Status: `[ ]` offen · `[~]` in Arbeit · `[x]` erledigt · `[-]` aufgeteilt · 
 | M-70 | [~] | Doku | README/CHANGELOG/Documentation~ (Unity 6.3, Windows 11, .NET 8), Version 0.2.0 | M-26 | – | Docs konsistent |
 | M-71 | [manuell] | QA | Smoke-Matrix HDRP/URP × DX11/DX12, 2-Node-Lauf | M-33, M-35, M-42 | – | Matrix grün |
 | M-72 | [ ] | Meilenstein | **6.7 LTS** (inkl. M-22: `AppDomain.GetAssemblies` → `CurrentAssemblies`) (nach Installation) + CoreCLR-Vorbereitung (`Assembly.Location`, AppDomain, Marshal, MissionControl-Capcom) | M-71 | unity-api-migration | Neuer Backlog-Abschnitt 6.7 |
+| M-83 | [ ] | MissionControl | **.NET 10 LTS und Absicherung:** (1) alle `net8.0`-Projekte auf `net10.0` (SDK, Pakete inkl. `Radzen.Blazor`, `dotnet-version` in `mission-control-ci.yml`); (2) Authentifizierung (z. B. Token pro Dienst) und TLS für HangarBay, LaunchPad, MissionControl, Oberfläche; `MissionControl.Shared`-Quellen bleiben für Unity kompilierbar (keine neueren C#-Sprachmerkmale, als Unity unterstützt). **Frist: .NET 8 endet am 10.11.2026** (danach keine Patches mehr) | M-81 (Ergebnis des Kabeltests abwarten) | – | `dotnet test MissionControl.sln -m:1` grün unter `net10.0`; Zugriff ohne Token wird abgelehnt (Test); `unity-compile-check` grün (Shared-Quellen); Zwei-Rechner-Lauf unverändert |
 
 ## Log
 | Datum | ID | Ergebnis (Fehler / Obsolete / Tests) | Commit | Notizen |
