@@ -52,10 +52,25 @@ function Expand-Package([string]$Name, [string]$Target) {
     $procNames = @($Name)
     if ($Name -eq 'UI') { $procNames += 'MissionControl.EngineeringUI.Server' }
     if ($Name -eq 'LaunchPad') { $procNames += 'pfcClusterBasicTestURP' }
-    foreach ($pn in $procNames) { Get-Process -Name $pn -ErrorAction SilentlyContinue | Stop-Process -Force }
+    foreach ($pn in $procNames) {
+        $procs = @(Get-Process -Name $pn -ErrorAction SilentlyContinue)
+        $procs | Stop-Process -Force -ErrorAction SilentlyContinue
+        # Windows gibt die Dateien eines beendeten Programms erst kurz danach frei: auf das Ende warten
+        $procs | ForEach-Object { try { $_.WaitForExit(10000) | Out-Null } catch { } }
+    }
     if (Test-Path $dst) {
-        # config.json und Daten bleiben bei einem erneuten Setup nicht erhalten (frische Installation)
-        Remove-Item $dst -Recurse -Force
+        # config.json und Daten bleiben bei einem erneuten Setup nicht erhalten (frische Installation).
+        # Mehrere Versuche, falls ein Virenscanner oder ein soeben beendetes Programm die Dateien noch festhaelt.
+        $removed = $false
+        for ($try = 1; $try -le 10 -and -not $removed; $try++) {
+            try { Remove-Item $dst -Recurse -Force -ErrorAction Stop; $removed = $true }
+            catch { if ($try -lt 10) { Start-Sleep -Seconds 1 } else { $lastError = $_.Exception.Message } }
+        }
+        if (-not $removed) {
+            throw ("Der Ordner $dst konnte nicht geloescht werden: $lastError`n" +
+                   'Ein Programm haelt noch Dateien daraus fest. Alle Fenster mit Diensten schliessen (HangarBay, LaunchPad, ' +
+                   'MissionControl, Oberflaeche, Player), den Datei-Explorer in diesem Ordner schliessen und das Skript erneut starten.')
+        }
     }
     Expand-Archive $zip -DestinationPath $dst -Force
 }
