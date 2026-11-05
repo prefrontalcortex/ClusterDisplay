@@ -41,7 +41,7 @@ Write-JsonNoBom (Join-Path $Target 'MissionControl\MissionControl\config.json') 
 
 # --- Firewall ------------------------------------------------------------------------------------------------------
 $lpDir = Join-Path $Target 'LaunchPad\LaunchPad'
-Add-FirewallRule 'ClusterTest Ports TCP' @{ Protocol = 'TCP'; LocalPort = '8000,8100,8200,8300,9000' }
+Add-FirewallRule 'ClusterTest Ports TCP' @{ Protocol = 'TCP'; LocalPort = @('8000', '8100', '8200', '8300', '9000') }
 Add-FirewallRule 'ClusterTest Multicast' @{ Protocol = 'UDP'; LocalPort = '25690' }
 Add-FirewallRule 'ClusterTest Player'    @{ Program = (Join-Path $lpDir "toLaunch\$PlayerName.exe") }
 

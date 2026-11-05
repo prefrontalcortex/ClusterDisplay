@@ -48,7 +48,11 @@ function Expand-Package([string]$Name, [string]$Target) {
     $zip = Join-Path (Join-Path $PSScriptRoot '..\packages') "$Name.zip"
     if (-not (Test-Path $zip)) { throw "Paket nicht gefunden: $zip" }
     $dst = Join-Path $Target $Name
-    Get-Process -Name $Name -ErrorAction SilentlyContinue | Stop-Process -Force
+    # laufende Prozesse beenden, sonst halten sie ihre Dateien fest und das Loeschen schlaegt fehl
+    $procNames = @($Name)
+    if ($Name -eq 'UI') { $procNames += 'MissionControl.EngineeringUI.Server' }
+    if ($Name -eq 'LaunchPad') { $procNames += 'pfcClusterBasicTestURP' }
+    foreach ($pn in $procNames) { Get-Process -Name $pn -ErrorAction SilentlyContinue | Stop-Process -Force }
     if (Test-Path $dst) {
         # config.json und Daten bleiben bei einem erneuten Setup nicht erhalten (frische Installation)
         Remove-Item $dst -Recurse -Force
@@ -57,6 +61,10 @@ function Expand-Package([string]$Name, [string]$Target) {
 }
 
 function Add-FirewallRule([string]$Name, [hashtable]$Params) {
+    # New-NetFirewallRule erwartet -LocalPort als Liste; ein einzelner Text mit Kommas ("8000,8100") ist ungueltig.
+    if ($Params.ContainsKey('LocalPort') -and $Params['LocalPort'] -is [string]) {
+        $Params['LocalPort'] = @($Params['LocalPort'] -split '\s*,\s*' | Where-Object { $_ })
+    }
     Get-NetFirewallRule -DisplayName $Name -ErrorAction SilentlyContinue | Remove-NetFirewallRule
     New-NetFirewallRule -DisplayName $Name -Direction Inbound -Action Allow -Profile Any @Params | Out-Null
 }
