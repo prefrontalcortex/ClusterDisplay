@@ -6,7 +6,7 @@
 * Requires Unity 6.3 LTS (6000.3). Package dependencies updated (Collections 2.6, Newtonsoft Json 3.2, Input System, Mono Cecil 1.11).
 * **Network protocol**: datagrams now have a header with a magic byte and a protocol version (all nodes must run the same version) and no longer exceed the network MTU (they were fragmented by the IP layer before).
 * URP: the present pass is now recorded in the Render Graph (URP Compatibility Mode, removed in Unity 6.4, is no longer needed).
-* Mission Control: .NET 8, clearer error messages when an asset (build) is refused, assets in an old format are refused, file paths are restricted to the asset folder.
+* Mission Control: .NET 10, clearer error messages when an asset (build) is refused, assets in an old format are refused, file paths are restricted to the asset folder.
 
 ### Added
 * `TimeSync.FixedStep` / `-timeSync fixedStep`: time synchronization without `ClusterSerialization`.

@@ -30,7 +30,7 @@ Stand der Software: Branch `dotnet-update`, Unity 6000.3.13f1. Bekannte Einschr�
 |---|---|
 | Rechner | 2 × Windows 11 (64 Bit), Grafikkarte mit aktuellem Treiber, Monitor am Rechner (der Player zeigt ein Fenster) |
 | Netzwerk | Beide Rechner **per Kabel am selben Switch**, im **selben IP-Netz** (z. B. 192.168.10.x / 255.255.255.0). Multicast muss erlaubt sein. WLAN am besten ausschalten. |
-| Software | **ASP.NET Core Runtime 8 (x64)** auf beiden Rechnern: <https://dotnet.microsoft.com/en-us/download/dotnet/8.0>, Spalte „ASP.NET Core Runtime“ (nicht nur „.NET Runtime“ oder „Desktop Runtime“) |
+| Software | **ASP.NET Core Runtime 10 (x64)** auf beiden Rechnern: <https://dotnet.microsoft.com/en-us/download/dotnet/10.0>, Spalte „ASP.NET Core Runtime“ (nicht nur „.NET Runtime“ oder „Desktop Runtime“) |
 | Rechte | Administrator auf beiden Rechnern (für die Firewall-Regeln beim Setup) |
 | Platz | ca. 1 GB je Rechner |
 | Benutzer | Auf jedem Rechner ist ein Benutzer **angemeldet** (der Player öffnet sein Fenster auf diesem Desktop) |
@@ -228,7 +228,7 @@ mit einem ZIP-Programm angesehen werden.
 
 | Beobachtung | Wahrscheinliche Ursache und Maßnahme |
 |---|---|
-| Dienst startet nicht, Meldung zu .NET oder `Microsoft.AspNetCore.App` | Nur „.NET Runtime“ installiert. **ASP.NET Core Runtime 8** installieren (siehe Abschnitt 1). Prüfen: `dotnet --list-runtimes` muss `Microsoft.AspNetCore.App 8.x` enthalten. |
+| Dienst startet nicht, Meldung zu .NET oder `Microsoft.AspNetCore.App` | Nur „.NET Runtime“ installiert. **ASP.NET Core Runtime 10** installieren (siehe Abschnitt 1). Prüfen: `dotnet --list-runtimes` muss `Microsoft.AspNetCore.App 8.x` enthalten. |
 | Skript bricht ab: „Bitte als Administrator starten“ | PowerShell mit „Als Administrator ausführen“ öffnen. |
 | In der Oberfläche lässt sich die Kennung nicht laden | Dienst auf dem Rechner läuft nicht oder die Firewall blockt: `start-services.ps1` ausführen, dann vom anderen Rechner `Test-NetConnection <IP> -Port 8100` und `-Port 8200`. |
 | Asset wird abgelehnt, Meldung nennt eine Datei („MD5“) | Datei verändert (z. B. Zeilenenden durch Git oder Editor). Ordner `player\...` frisch aus dem Paket kopieren, nicht öffnen. |

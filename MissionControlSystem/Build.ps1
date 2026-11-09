@@ -3,7 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 $buildType = "Release"
-$dotNetVersion = "net8.0"
+$dotNetVersion = "net10.0"
 $missionControlPath = $PSScriptRoot
 
 Write-Host "Building MissionControlSystem in $buildType configuration..."

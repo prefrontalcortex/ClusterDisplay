@@ -9,11 +9,11 @@ function Assert-Admin {
     if (-not $isAdmin) { throw 'Bitte PowerShell als Administrator starten (Rechtsklick -> Als Administrator ausfuehren). Noetig fuer die Firewall-Regeln.' }
 }
 
-function Assert-AspNet8 {
+function Assert-AspNet10 {
     $runtimes = $null
     try { $runtimes = & dotnet --list-runtimes 2>$null } catch { }
-    if (-not ($runtimes | Select-String 'Microsoft\.AspNetCore\.App 8\.')) {
-        throw ('ASP.NET Core Runtime 8 (x64) fehlt. Bitte installieren: https://dotnet.microsoft.com/en-us/download/dotnet/8.0 ' +
+    if (-not ($runtimes | Select-String 'Microsoft\.AspNetCore\.App 10\.')) {
+        throw ('ASP.NET Core Runtime 10 (x64) fehlt. Bitte installieren: https://dotnet.microsoft.com/en-us/download/dotnet/10.0 ' +
                '(Spalte "ASP.NET Core Runtime", NICHT nur ".NET Runtime" oder "Desktop Runtime"). Danach dieses Skript erneut starten.')
     }
 }

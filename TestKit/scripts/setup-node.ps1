@@ -19,7 +19,7 @@ param(
 . (Join-Path $PSScriptRoot 'common.ps1')
 
 Assert-Admin
-Assert-AspNet8
+Assert-AspNet10
 $n = Resolve-ClusterNic -Nic $Nic -PeerAddress $ControllerAddress
 Set-NicPrivate $n.Name
 Write-Host "Cluster-Adapter: $($n.Name), IP $($n.Ip)"

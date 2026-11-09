@@ -1,9 +1,9 @@
 ﻿# Package.ps1
-# Ermittelt TargetFramework dynamisch aus MissionControl.csproj (Fallback net8.0)
+# Ermittelt TargetFramework dynamisch aus MissionControl.csproj (Fallback net10.0)
 
 $missionControlPath = $PSScriptRoot
 $buildType = "Release"
-$defaultFramework = "net8.0"
+$defaultFramework = "net10.0"
 
 function Get-TargetFrameworkFromCsproj($csprojPath) {
     if (-not (Test-Path $csprojPath)) { return $null }

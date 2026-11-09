@@ -11,6 +11,26 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
 {
     public class FileBlobsManagerTests
     {
+        // The size of a gzip stream depends on the .NET version (the compression implementation changed between .NET 8
+        // and .NET 10), so the sizes of the blobs used by the tests are computed instead of being hard coded.
+        static long GzipSize(string content)
+        {
+            using var compressed = new MemoryStream();
+            using (var compressor = new GZipStream(compressed, CompressionMode.Compress, true))
+            {
+                var bytes = System.Text.Encoding.UTF8.GetBytes(content);
+                compressor.Write(bytes, 0, bytes.Length);
+            }
+            return compressed.Length;
+        }
+
+        /// <summary>Compressed size of "This is the file content" (and of the same text with other capitalization).</summary>
+        static readonly long k_SizeA = GzipSize("This is the file content");
+        /// <summary>Compressed size of "This is a different content".</summary>
+        static readonly long k_SizeB = GzipSize("This is a different content");
+        /// <summary>Compressed size of "This is yet another file content".</summary>
+        static readonly long k_SizeC = GzipSize("This is yet another file content");
+
         [SetUp]
         public void Setup()
         {
@@ -85,7 +105,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(file2Id, Is.Not.EqualTo(file1Id));
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 86, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = k_SizeA + k_SizeB, MaximumSize = 1000 } });
 
             // Serialize storage folder
             manager.PersistStorageFolderStates();
@@ -95,7 +115,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             manager.AddStorageFolder(folderConfig);
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 86, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = k_SizeA + k_SizeB, MaximumSize = 1000 } });
 
             manager.IncreaseFileBlobReference(file1Id);
             manager.IncreaseFileBlobReference(file2Id);
@@ -135,7 +155,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(file2Id, Is.Not.EqualTo(file1Id));
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = 86, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = k_SizeA + k_SizeB, MaximumSize = 1000 } });
 
             manager.PersistStorageFolderStates();
 
@@ -174,7 +194,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(file1Take2Id, Is.EqualTo(file1Id));
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = 86, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = k_SizeA + k_SizeB, MaximumSize = 1000 } });
         }
 
         [Test]
@@ -206,7 +226,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(file2Id, Is.Not.EqualTo(file1Id));
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 86, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = k_SizeA + k_SizeB, MaximumSize = 1000 } });
 
             // Serialize storage folder
             manager.PersistStorageFolderStates();
@@ -245,7 +265,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
 
             // And status of the storage up to date
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 185, ZombiesSize = 99,
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = k_SizeA + k_SizeB + 99, ZombiesSize = 99,
                     MaximumSize = 1000 } });
         }
 
@@ -311,7 +331,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(file1Id, Is.Not.EqualTo(Guid.Empty));
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 42, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = k_SizeA, MaximumSize = 1000 } });
 
             string file2ContentString = "This is a different content";
             await using var file2Content = CreateStreamFromString(file2ContentString);
@@ -321,7 +341,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(file2Id, Is.Not.EqualTo(file1Id));
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 86, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = k_SizeA + k_SizeB, MaximumSize = 1000 } });
 
             // Try to add them back again (should get the same ids)
             string[] hexContents = new[] { file1ContentString, file2ContentString };
@@ -591,7 +611,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(file1Id, Is.Not.EqualTo(Guid.Empty));
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 42, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = k_SizeA, MaximumSize = 1000 } });
 
             // Delete it from the storage folder (in fact, this is the only file it should contain, so let's delete the
             // complete storage folder!
@@ -606,7 +626,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(file2Id, Is.Not.EqualTo(file1Id));
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 84, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 2 * k_SizeA, MaximumSize = 1000 } });
 
             // Try to add them back again (without deleting from storage this time), should get the same id
             fileContent.Position = 0;
@@ -615,7 +635,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(file3Id, Is.EqualTo(file2Id));
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 84, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 2 * k_SizeA, MaximumSize = 1000 } });
         }
 
         [Test]
@@ -636,7 +656,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(file1Id, Is.Not.EqualTo(Guid.Empty));
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 42, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = k_SizeA, MaximumSize = 1000 } });
 
             // Hack the content of the file to make it shorter.
             string filePath = GetBlobPath(folderConfig.Path, file1Id);
@@ -651,7 +671,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(file2Id, Is.Not.EqualTo(file1Id));
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 84, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 2 * k_SizeA, MaximumSize = 1000 } });
         }
 
         [Test]
@@ -672,7 +692,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(file1Id, Is.Not.EqualTo(Guid.Empty));
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 42, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = k_SizeA, MaximumSize = 1000 } });
 
             // Hack the content of the file to make it shorter.
             string filePath = GetBlobPath(folderConfig.Path, file1Id);
@@ -686,7 +706,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(file2Id, Is.Not.EqualTo(file1Id));
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 84, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 2 * k_SizeA, MaximumSize = 1000 } });
         }
 
         [Test]
@@ -826,7 +846,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(fileId, Is.Not.EqualTo(Guid.Empty));
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 42, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = k_SizeA, MaximumSize = 1000 } });
 
             Assert.ThrowsAsync<KeyNotFoundException>(() => manager.DecreaseFileBlobReferenceAsync(Guid.NewGuid()));
 
@@ -901,7 +921,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             {
                 Assert.That(file1Lock.Id, Is.EqualTo(file1Id));
                 Assert.That(file1Lock.Md5, Is.EqualTo(file1Md5));
-                Assert.That(file1Lock.CompressedSize, Is.EqualTo(42));
+                Assert.That(file1Lock.CompressedSize, Is.EqualTo(k_SizeA));
                 Assert.That(file1Lock.Size, Is.EqualTo(file1Content.Length));
                 Assert.That(File.Exists(file1Lock.Path), Is.True);
                 // Remarks: We could be tempted to test the content of the file (which is compressed) but this is not
@@ -909,14 +929,14 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
                 // the file would be wrong.
 
                 CompareStatus(manager,
-                    new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 86, MaximumSize = 1000 } });
+                    new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = k_SizeA + k_SizeB, MaximumSize = 1000 } });
 
                 // Decrease reference count of the locked files, should work without problems (not affected by the lock
                 // since the file does not have to be deleted).
                 await manager.DecreaseFileBlobReferenceAsync(file1Id);
 
                 CompareStatus(manager,
-                    new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 86, MaximumSize = 1000 } });
+                    new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = k_SizeA + k_SizeB, MaximumSize = 1000 } });
 
                 // But decreasing it again should "stall" since the file is locked
                 decreaseTask = manager.DecreaseFileBlobReferenceAsync(file1Id);
@@ -926,7 +946,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
                 // We should however be able to decrease reference count of file2 (and delete it)
                 await manager.DecreaseFileBlobReferenceAsync(file2Id);
                 CompareStatus(manager,
-                    new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 42, MaximumSize = 1000 } });
+                    new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = k_SizeA, MaximumSize = 1000 } });
                 Assert.That(decreaseTask.IsCompleted, Is.False);
 
                 // Let's exit the scope, which will unlock the locked file and allow the decrease to finally complete.
@@ -977,7 +997,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             await manager.RemoveStorageFolderAsync(folder2Config.Path);
 
             CompareStatus(manager, new[] {
-                new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = 84, MaximumSize = 1000 } });
+                new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = 2 * k_SizeA, MaximumSize = 1000 } });
 
             // Add it back and now to the serious test, try to remove folder1 (but will fail since folder2 is not large
             // enough for both files).
@@ -991,15 +1011,15 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             manager.AddStorageFolder(folder3Config);
 
             CompareStatus(manager, new[] {
-                new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = 84, MaximumSize = 1000 },
+                new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = 2 * k_SizeA, MaximumSize = 1000 },
                 new StorageFolderStatus() { Path = folder2Config.Path, CurrentSize = 0,  MaximumSize = 50   },
                 new StorageFolderStatus() { Path = folder3Config.Path, CurrentSize = 0,  MaximumSize = 50   } });
 
             await manager.RemoveStorageFolderAsync(folder1Config.Path);
 
             CompareStatus(manager, new[] {
-                new StorageFolderStatus() { Path = folder2Config.Path, CurrentSize = 42, MaximumSize = 50   },
-                new StorageFolderStatus() { Path = folder3Config.Path, CurrentSize = 42, MaximumSize = 50   } });
+                new StorageFolderStatus() { Path = folder2Config.Path, CurrentSize = k_SizeA, MaximumSize = 50   },
+                new StorageFolderStatus() { Path = folder3Config.Path, CurrentSize = k_SizeA, MaximumSize = 50   } });
             Assert.That(CountFilesInFolder(folder2Config.Path), Is.EqualTo(1));
             Assert.That(CountFilesInFolder(folder3Config.Path), Is.EqualTo(1));
 
@@ -1068,7 +1088,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(awaitTask, Is.SameAs(removeTask)); // Or else await timed out -> RemoveStorageFolderAsync is stuck
 
             CompareStatus(manager, new[] {
-                new StorageFolderStatus() { Path = folder2Config.Path, CurrentSize = 84, MaximumSize = 1000 } });
+                new StorageFolderStatus() { Path = folder2Config.Path, CurrentSize = 2 * k_SizeA, MaximumSize = 1000 } });
 
             await TestFileOfBlobPresent(manager, file1Id);
             await TestFileOfBlobPresent(manager, file2Id);
@@ -1250,7 +1270,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(awaitTask, Is.SameAs(removeTask2)); // Or else await timed out
 
             CompareStatus(manager, new[] {
-                new StorageFolderStatus() { Path = folder3Config.Path, CurrentSize = 84, MaximumSize = 1000 } });
+                new StorageFolderStatus() { Path = folder3Config.Path, CurrentSize = 2 * k_SizeA, MaximumSize = 1000 } });
 
             await TestFileOfBlobPresent(manager, file1Id);
             await TestFileOfBlobPresent(manager, file2Id);
@@ -1318,7 +1338,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             Assert.That(awaitTask, Is.SameAs(decreaseReferenceTask)); // Or else await timed out
 
             CompareStatus(manager, new[] {
-                new StorageFolderStatus() { Path = folder2Config.Path, CurrentSize = 42, MaximumSize = 1000 } });
+                new StorageFolderStatus() { Path = folder2Config.Path, CurrentSize = k_SizeA, MaximumSize = 1000 } });
 
             Assert.ThrowsAsync<KeyNotFoundException>(() => manager.LockFileBlob(file1Id));
             await TestFileOfBlobPresent(manager, file2Id);
@@ -1568,31 +1588,31 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             await manager.AddFileBlobAsync(file2Content, file2Content.Length, file2Md5);
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = 84, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = 2 * k_SizeA, MaximumSize = 1000 } });
 
             // Smaller but still just big enough
-            folder1Config.MaximumSize = 84;
+            folder1Config.MaximumSize = 2 * k_SizeA;
             await manager.UpdateStorageFolderAsync(folder1Config);
 
             // 1 byte too small and no where for the files to go
-            folder1Config.MaximumSize = 83;
+            folder1Config.MaximumSize = 2 * k_SizeA - 1;
             Assert.ThrowsAsync<StorageFolderFullException>(() => manager.UpdateStorageFolderAsync(folder1Config));
 
             StorageFolderConfig folder2Config = new();
             folder2Config.Path = GetNewStorageFolder();
-            folder2Config.MaximumSize = 41;
+            folder2Config.MaximumSize = k_SizeA - 1;
             manager.AddStorageFolder(folder2Config);
 
             // Now there is a folder but not enough capacity
             Assert.ThrowsAsync<StorageFolderFullException>(() => manager.UpdateStorageFolderAsync(folder1Config));
 
             // Make the folder large enough
-            folder2Config.MaximumSize = 42;
+            folder2Config.MaximumSize = k_SizeA;
             await manager.UpdateStorageFolderAsync(folder2Config);
             await manager.UpdateStorageFolderAsync(folder1Config);
 
             // Move everything to the second folder (by making the first one really small)
-            folder2Config.MaximumSize = 84;
+            folder2Config.MaximumSize = 2 * k_SizeA;
             await manager.UpdateStorageFolderAsync(folder2Config);
             folder1Config.MaximumSize = 0;
             await manager.UpdateStorageFolderAsync(folder1Config);
@@ -1600,7 +1620,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             // Validate status of folders
             CompareStatus(manager, new[] {
                 new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = 0, MaximumSize = 0 },
-                new StorageFolderStatus() { Path = folder2Config.Path, CurrentSize = 84, MaximumSize = 84 } });
+                new StorageFolderStatus() { Path = folder2Config.Path, CurrentSize = 2 * k_SizeA, MaximumSize = 2 * k_SizeA } });
         }
 
         [Test]
@@ -1626,7 +1646,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             var file2Id = await manager.AddFileBlobAsync(file2Content, file2Content.Length, file2Md5);
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = 84, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = 2 * k_SizeA, MaximumSize = 1000 } });
 
             // Transform content into zombies
             string file1BlobPath = GetBlobPath(folder1Config.Path, file1Id);
@@ -1640,7 +1660,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             await manager.DecreaseFileBlobReferenceAsync(file2Id);
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = 84, ZombiesSize = 84,
+                new[] { new StorageFolderStatus() { Path = folder1Config.Path, CurrentSize = 2 * k_SizeA, ZombiesSize = 2 * k_SizeA,
                                                     MaximumSize = 1000 } });
 
             // Create a new storage folder that could receive content from folder 1
@@ -1650,11 +1670,11 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             manager.AddStorageFolder(folder2Config);
 
             // Resize the folder just large enough to accommodate zombies shouldn't cause problems.
-            folder1Config.MaximumSize = 84;
+            folder1Config.MaximumSize = 2 * k_SizeA;
             await manager.UpdateStorageFolderAsync(folder1Config);
 
             // However anything small would result in zombie juice (exception)
-            folder1Config.MaximumSize = 83;
+            folder1Config.MaximumSize = 2 * k_SizeA - 1;
             Assert.ThrowsAsync<InvalidOperationException>(() => manager.UpdateStorageFolderAsync(folder1Config));
             m_LoggerMock.VerifyLog(l => l.LogError("*will be added to zombies that we will try to remove on next restart*"));
         }
@@ -1689,7 +1709,7 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
             await manager.AddFileBlobAsync(file2Content, file2Content.Length, file2Md5);
 
             CompareStatus(manager,
-                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 172, MaximumSize = 1000 } });
+                new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 128 + k_SizeB, MaximumSize = 1000 } });
 
             // Serialize storage folder (with a non ready file)
             manager.PersistStorageFolderStates();
@@ -1717,14 +1737,14 @@ namespace Unity.ClusterDisplay.MissionControl.MissionControl
                 // Not ready as persist files should have been completed before loading, so file should have been kept
                 m_LoggerMock.VerifyLog(l => l.LogWarning("*was tagged as not ready but it looks complete*"));
                 CompareStatus(manager,
-                    new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 172, MaximumSize = 1000 } });
+                    new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 128 + k_SizeB, MaximumSize = 1000 } });
             }
             else
             {
                 // File has never been completed...
                 m_LoggerMock.VerifyLog(l => l.LogError("*was tagger as not ready and does not look like it is*"));
                 CompareStatus(manager,
-                    new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = 44, MaximumSize = 1000 } });
+                    new[] { new StorageFolderStatus() { Path = folderConfig.Path, CurrentSize = k_SizeB, MaximumSize = 1000 } });
             }
         }
 

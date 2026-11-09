@@ -11,7 +11,7 @@ weitergegeben. Wer nur das Repo hat, baut es nach den folgenden Schritten oder b
 
 ## Paket herstellen
 
-Voraussetzung: Unity 6000.3.13f1 (Pfad in `UNITY_PATH`), .NET 8 SDK, PowerShell. Immer von einem sauberen Git-Stand
+Voraussetzung: Unity 6000.3.13f1 (Pfad in `UNITY_PATH`), .NET 10 SDK, PowerShell. Immer von einem sauberen Git-Stand
 bauen (`git status` ohne Änderungen).
 
 1. **Dienste-Pakete** (HangarBay, LaunchPad, MissionControl, UI):
