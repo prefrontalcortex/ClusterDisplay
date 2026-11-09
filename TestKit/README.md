@@ -48,4 +48,5 @@ bauen (`git status` ohne Änderungen).
 | `ANLEITUNG.md` | Schritt-für-Schritt-Anleitung, Teil A (Netzwerk, zwei Rechner) und Teil B (Quadro/RTX PRO Sync) |
 | `MESSPROTOKOLL.md` | Vorlage zum Ausfüllen und Zurückschicken |
 | `make-kit.ps1` | stellt das Paket zusammen |
+| `setup.ps1` | Einstieg: fragt Rolle und Adapter, startet sich als Administrator, ruft das passende Setup auf |
 | `scripts/` | Setup- und Hilfsskripte (`setup-controller`, `setup-node`, `start-services`, `network-check`, `fps-from-network-log`, `collect-logs`) |

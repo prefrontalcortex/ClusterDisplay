@@ -36,6 +36,7 @@ foreach ($p in $Players) {
     if ($LASTEXITCODE -ge 8) { throw "robocopy fehlgeschlagen fuer $p (Code $LASTEXITCODE)" }
 }
 Copy-Item (Join-Path $PSScriptRoot 'scripts\*.ps1') (Join-Path $Out 'scripts')
+Copy-Item (Join-Path $PSScriptRoot 'setup.ps1') $Out
 Copy-Item (Join-Path $PSScriptRoot 'ANLEITUNG.md'), (Join-Path $PSScriptRoot 'MESSPROTOKOLL.md') $Out
 # Lizenzhinweis des enthaltenen Testmusters (Paul Bourke): muss jeder Weitergabe beiliegen
 $notice = Join-Path $repo 'THIRD-PARTY-NOTICES.md'

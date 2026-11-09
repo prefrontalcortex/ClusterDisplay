@@ -104,8 +104,13 @@ Abschnitt 8 („Es kommt nichts an“). Ein Verlust von mehr als ca. 10 % deutet
 
 ## 5. Dienste einrichten
 
-Jeweils eine **PowerShell als Administrator** (Rechtsklick auf „Windows PowerShell“ → „Als Administrator ausführen“),
-Ordner `C:\test-kit\scripts`.
+**Einfachster Weg:** im Kit-Ordner Rechtsklick auf `setup.ps1` → „Mit PowerShell ausführen“. Das Skript startet sich
+selbst als Administrator, fragt, ob der Rechner Steuerrechner oder Knoten ist, bietet die Netzwerkadapter zur Auswahl an
+und ruft das passende Setup auf. Ohne Fragen: `.\setup.ps1 -Role controller -Nic "Ethernet"` bzw.
+`.\setup.ps1 -Role node -ControllerAddress <IP von A>`.
+
+Die folgenden Befehle sind der manuelle Weg (identisches Ergebnis). Dafür eine **PowerShell als Administrator**
+(Rechtsklick auf „Windows PowerShell“ → „Als Administrator ausführen“), Ordner `C:\test-kit\scripts`.
 
 **Rechner A (Steuerrechner):**
 
